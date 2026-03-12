@@ -50,15 +50,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="mb-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
             Foundation Stone Advisors
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-white">BusinessOS</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="mt-2 text-2xl font-bold text-gray-900">BusinessOS</h1>
+          <p className="mt-1 text-sm text-gray-500">
             {mode === 'signin' ? 'Sign in to your account' : 'Create your account'}
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-xs font-medium text-zinc-400 mb-1.5">
+            <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1.5">
               Email address
             </label>
             <input
@@ -76,13 +76,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-xs font-medium text-zinc-400 mb-1.5">
+            <label htmlFor="password" className="block text-xs font-medium text-gray-600 mb-1.5">
               Password
             </label>
             <input
@@ -92,19 +92,19 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-950 border border-red-800 px-4 py-2.5 text-sm text-red-400">
+            <p className="rounded-lg bg-red-50 border border-red-200 px-4 py-2.5 text-sm text-red-600">
               {error}
             </p>
           )}
 
           {message && (
-            <p className="rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-zinc-300">
+            <p className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-2.5 text-sm text-blue-700">
               {message}
             </p>
           )}
@@ -112,22 +112,22 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading
-              ? mode === 'signin' ? 'Signing in…' : 'Creating account…'
+              ? mode === 'signin' ? 'Signing in...' : 'Creating account...'
               : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
 
         {/* Toggle */}
-        <p className="mt-6 text-center text-sm text-zinc-500">
+        <p className="mt-6 text-center text-sm text-gray-500">
           {mode === 'signin' ? (
             <>
               First time?{' '}
               <button
                 onClick={() => { setMode('signup'); setError(null); setMessage(null) }}
-                className="text-zinc-300 hover:text-white underline underline-offset-2"
+                className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Create an account
               </button>
@@ -137,7 +137,7 @@ export default function LoginPage() {
               Already have an account?{' '}
               <button
                 onClick={() => { setMode('signin'); setError(null); setMessage(null) }}
-                className="text-zinc-300 hover:text-white underline underline-offset-2"
+                className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Sign in
               </button>
