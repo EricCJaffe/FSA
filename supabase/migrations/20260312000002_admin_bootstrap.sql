@@ -9,15 +9,15 @@ RETURNS TRIGGER AS $$
 BEGIN
   -- Bootstrap: ejaffejax@gmail.com is always family_office_admin
   IF NEW.email = 'ejaffejax@gmail.com' THEN
-    INSERT INTO user_org_roles (user_id, org_id, role)
+    INSERT INTO public.user_org_roles (user_id, org_id, role)
     SELECT NEW.id, id, 'family_office_admin'
-    FROM orgs
+    FROM public.orgs
     ON CONFLICT (user_id, org_id) DO NOTHING;
   END IF;
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
