@@ -6,7 +6,8 @@ _Last updated: 2026-03-12_
 
 ## In Progress
 
-- [ ] Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel env vars (manual step — Vercel dashboard)
+- [ ] Get **P&L by Class** export from QBO (needed for per-property analytics)
+- [ ] Build per-property + portfolio analytics dashboards
 
 ---
 
@@ -19,43 +20,41 @@ _Last updated: 2026-03-12_
 - [x] RLS policies + RBAC helper functions
 - [x] Supabase SSR client wiring (browser + server + middleware)
 - [x] Auth middleware (protect `/dashboard/**`)
-- [x] Deploy to Vercel (`fsa-lake.vercel.app`)
+- [x] Deploy to Vercel
 - [x] CLAUDE.md + docs structure + ADRs 0001–0005
 - [x] Tenant/org type migration — Foundation Stone Advisors, Yarash Eretz Property Management, Honey Lake Digital, VakPak
 - [x] PM schema migration — pm_projects, pm_phases, pm_tasks, pm_risks, pm_daily_logs, pm_files, pm_project_templates (seeded)
 
-### Auth & Users
-- [ ] Login page (`/login`) with Supabase email auth
-- [ ] Auth callback route (`/auth/callback`)
-- [ ] Microsoft OAuth provider in Supabase (Azure AD app registration)
-- [ ] Post-login redirect to `/dashboard`
-- [ ] User session display in nav
+### Auth & Users (complete)
+- [x] Login page (`/login`) with Supabase email auth
+- [x] Auth callback route (`/auth/callback`)
+- [x] Post-login redirect to `/dashboard`
+- [x] User session display in sidebar
+- [x] Vercel env vars configured (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
+- [x] Light theme + Lucide icons
+- [ ] Microsoft OAuth provider in Supabase (Azure AD app registration) — deferred
 
-### Property Registry
-- [ ] `/dashboard/properties` — property list for org
-- [ ] Property detail page `/dashboard/properties/[id]`
-- [ ] Add/edit property form (name, address, type LTR/STR, purchase details, mortgage, market value, QBO class mapping)
+### Property Registry (complete)
+- [x] `/dashboard/properties` — property list for org
+- [x] Property detail page `/dashboard/properties/[id]`
+- [x] Add/edit property form (name, address, type LTR/STR, purchase details, mortgage, market value, QBO class mapping)
+- [x] Seed 5 properties with QBO class names from actual QBO Classes export
 
-### QuickBooks Integration
-- [ ] Set up QBO app in Intuit Developer Portal (sandbox + production)
-- [ ] Add QBO env vars to Vercel
-- [ ] QBO OAuth flow (`/api/qbo/connect` → `/api/qbo/callback`)
-- [ ] Store + refresh QBO tokens in `qbo_connections`
-- [ ] QBO sync engine: pull P&L and transactions by class per property
-- [ ] Store synced data in `financial_line_items`
-- [ ] Sync status UI + manual refresh button
+### QuickBooks Integration (deferred — plan documented)
+- [x] Document QBO integration plan (`docs/QBO_INTEGRATION_PLAN.md`)
+- [x] Map QBO Classes → properties (class names stored in DB)
+- [x] Import Balance Sheet + P&L data (portfolio-level, 2025)
+- [ ] **Get P&L by Class** — per-property income/expense breakdown (manual export from QBO)
+- [ ] Build CSV/text import flow for financial data
+- [ ] QBO API OAuth flow — deferred until dashboards are solid
+- [ ] QBO API sync engine — deferred
+- [ ] Sync status UI — deferred
 
-### Analytics Dashboards
+### Analytics Dashboards (next up)
 - [ ] Per-property metrics: NOI, Cap Rate, Cash-on-Cash, DSCR, GRM, OER
-- [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
-- [ ] STR metrics: ADR, RevPAN, seasonality (requires iTrip data)
+- [ ] Portfolio-level rollup dashboard (`/dashboard/portfolio`)
 - [ ] Month-over-month and YoY trend charts
-- [ ] Portfolio-level rollup dashboard
-
-### iTrip STR Data
-- [ ] Contact iTrip — determine API vs. export format
-- [ ] Export 5 years of STR historical data
-- [ ] Design import/ingestion flow
+- [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
 
 ### AI Insights Engine (FSA)
 - [ ] Multi-model routing logic (Claude primary, GPT-4o fallback)
@@ -142,3 +141,11 @@ _Last updated: 2026-03-12_
 - [x] 2026-03-12 — PM module plan (`docs/PM_MODULE.md`)
 - [x] 2026-03-12 — Tenant/org migration: Foundation Stone Advisors, Yarash Eretz, Honey Lake Digital, VakPak
 - [x] 2026-03-12 — PM schema: 7 tables + 4 seeded project templates applied to Supabase
+- [x] 2026-03-12 — Email auth flow (login, callback, middleware redirect)
+- [x] 2026-03-12 — Dashboard shell (sidebar, org card, module cards, phase tracker)
+- [x] 2026-03-12 — Vercel deployment working with env vars
+- [x] 2026-03-12 — Fix handle_new_user trigger (search_path = public)
+- [x] 2026-03-12 — Light theme + Lucide icons (replaced dark mode + emoji)
+- [x] 2026-03-12 — Property registry: list, detail, add/edit pages + server actions
+- [x] 2026-03-12 — Seed 5 properties from QBO Classes + import Balance Sheet & P&L data
+- [x] 2026-03-12 — QBO Integration Plan documented (`docs/QBO_INTEGRATION_PLAN.md`)
