@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LayoutDashboard, Building2, PieChart, LogOut } from 'lucide-react'
+import { LayoutDashboard, Building2, PieChart, Settings, LogOut } from 'lucide-react'
 
 const nav = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Properties', href: '/dashboard/properties', icon: Building2 },
   { label: 'Portfolio', href: '/dashboard/portfolio', icon: PieChart },
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 
 export default function Sidebar({ userEmail }: { userEmail: string }) {
@@ -45,7 +46,9 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {nav.map((item) => {
-          const active = pathname === item.href
+          const active = item.href === '/dashboard'
+            ? pathname === '/dashboard'
+            : pathname.startsWith(item.href)
           const Icon = item.icon
           return (
             <Link
