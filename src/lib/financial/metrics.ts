@@ -79,6 +79,98 @@ export function computePortfolioMetrics(items: FinancialLineItem[]): PortfolioMe
   }
 }
 
+export interface PropertyMetrics extends PortfolioMetrics {
+  propertyId: string
+  propertyName: string
+  propertyType: 'ltr' | 'str'
+  // Investment metrics (require property-level data)
+  purchasePrice: number | null
+  currentMarketValue: number | null
+  mortgageBalance: number | null
+  equity: number | null
+  capRate: number | null          // NOI / Market Value
+  cashOnCash: number | null       // NOI cash / Total Cash Invested (approx equity)
+  dscr: number | null             // NOI / Annual Debt Service
+  grm: number | null              // Market Value / Gross Annual Income
+}
+
+export function computePropertyMetrics(
+  items: FinancialLineItem[],
+  property: {
+    id: string
+    name: string
+    property_type: 'ltr' | 'str'
+    purchase_price: number | null
+    current_market_value: number | null
+    mortgage_balance: number | null
+    mortgage_payment: number | null
+  }
+): PropertyMetrics {
+  const base = computePortfolioMetrics(items)
+
+  const marketValue = property.current_market_value ? Number(property.current_market_value) : null
+  const mortgageBalance = property.mortgage_balance ? Number(property.mortgage_balance) : null
+  const mortgagePayment = property.mortgage_payment ? Number(property.mortgage_payment) : null
+  const purchasePrice = property.purchase_price ? Number(property.purchase_price) : null
+
+  const equity = marketValue != null && mortgageBalance != null
+    ? marketValue - mortgageBalance
+    : marketValue
+
+  const capRate = marketValue && base.noiCash
+    ? base.noiCash / marketValue
+    : null
+
+  const cashOnCash = equity && equity > 0 && base.noiCash
+    ? base.noiCash / equity
+    : null
+
+  const annualDebtService = mortgagePayment ? mortgagePayment * 12 : null
+  const dscr = annualDebtService && annualDebtService > 0 && base.noiCash
+    ? base.noiCash / annualDebtService
+    : null
+
+  const grm = marketValue && base.grossIncome > 0
+    ? marketValue / base.grossIncome
+    : null
+
+  return {
+    ...base,
+    propertyId: property.id,
+    propertyName: property.name,
+    propertyType: property.property_type,
+    purchasePrice: purchasePrice,
+    currentMarketValue: marketValue,
+    mortgageBalance: mortgageBalance,
+    equity,
+    capRate,
+    cashOnCash,
+    dscr,
+    grm,
+  }
+}
+
+/**
+ * Group financial line items by property, computing metrics for each.
+ */
+export function computeAllPropertyMetrics(
+  items: FinancialLineItem[],
+  properties: {
+    id: string
+    name: string
+    property_type: 'ltr' | 'str'
+    purchase_price: number | null
+    current_market_value: number | null
+    mortgage_balance: number | null
+    mortgage_payment: number | null
+  }[]
+): PropertyMetrics[] {
+  return properties.map((property) => {
+    const propertyItems = items.filter((i) => i.property_id === property.id)
+    return computePropertyMetrics(propertyItems, property)
+  })
+}
+
 export function formatCurrency(value: number, compact = false): string {
   if (compact && Math.abs(value) >= 1000) {
     return new Intl.NumberFormat('en-US', {

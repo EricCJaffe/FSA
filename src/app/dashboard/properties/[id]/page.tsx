@@ -1,6 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import {
+  computePropertyMetrics,
+  formatCurrency,
+  formatPercent,
+  type FinancialLineItem,
+} from '@/lib/financial/metrics'
 import type { Property } from '@/types'
 import {
   ArrowLeft,
@@ -14,6 +20,9 @@ import {
   TrendingUp,
   CreditCard,
   FileText,
+  BarChart3,
+  Activity,
+  Brain,
 } from 'lucide-react'
 
 function fmt(value: number | null, style: 'currency' | 'percent' | 'decimal' = 'currency') {
@@ -44,6 +53,15 @@ function Stat({ label, value, icon: Icon }: { label: string; value: string; icon
   )
 }
 
+function MetricBadge({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className={`rounded-lg px-4 py-3 ${color}`}>
+      <p className="text-xs font-medium opacity-75">{label}</p>
+      <p className="text-lg font-bold">{value}</p>
+    </div>
+  )
+}
+
 export default async function PropertyDetailPage({
   params,
 }: {
@@ -52,20 +70,45 @@ export default async function PropertyDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const [{ data, error }, { data: financials }, { data: insights }] = await Promise.all([
+    supabase.from('properties').select('*').eq('id', id).single(),
+    supabase
+      .from('financial_line_items')
+      .select('*')
+      .eq('property_id', id)
+      .order('period_date', { ascending: false }),
+    supabase
+      .from('ai_insights')
+      .select('*')
+      .eq('property_id', id)
+      .order('generated_at', { ascending: false })
+      .limit(5),
+  ])
 
   if (error || !data) notFound()
 
   const property = data as Property
+  const items = (financials ?? []) as FinancialLineItem[]
+  const hasFinancials = items.length > 0
+
+  const metrics = hasFinancials
+    ? computePropertyMetrics(items, {
+        id: property.id,
+        name: property.name,
+        property_type: property.property_type,
+        purchase_price: property.purchase_price,
+        current_market_value: property.current_market_value,
+        mortgage_balance: property.mortgage_balance,
+        mortgage_payment: property.mortgage_payment,
+      })
+    : null
 
   const equity =
     property.current_market_value != null && property.mortgage_balance != null
-      ? property.current_market_value - property.mortgage_balance
-      : null
+      ? Number(property.current_market_value) - Number(property.mortgage_balance)
+      : property.current_market_value != null
+        ? Number(property.current_market_value)
+        : null
 
   return (
     <div className="p-8 max-w-4xl">
@@ -125,7 +168,7 @@ export default async function PropertyDetailPage({
               </span>
               {property.ownership_pct != null && (
                 <span className="text-xs text-gray-400">
-                  {(property.ownership_pct * 100).toFixed(0)}% ownership
+                  {(Number(property.ownership_pct) * 100).toFixed(0)}% ownership
                 </span>
               )}
             </div>
@@ -133,7 +176,33 @@ export default async function PropertyDetailPage({
         </div>
       </div>
 
-      {/* Stats grid */}
+      {/* Investment metrics (when financial data exists) */}
+      {metrics && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
+          <MetricBadge
+            label="NOI (Cash)"
+            value={formatCurrency(metrics.noiCash)}
+            color={metrics.noiCash >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}
+          />
+          <MetricBadge
+            label="Cap Rate"
+            value={metrics.capRate != null ? formatPercent(metrics.capRate) : '—'}
+            color="bg-blue-50 text-blue-700"
+          />
+          <MetricBadge
+            label="Cash-on-Cash"
+            value={metrics.cashOnCash != null ? formatPercent(metrics.cashOnCash) : '—'}
+            color="bg-violet-50 text-violet-700"
+          />
+          <MetricBadge
+            label="OER"
+            value={formatPercent(metrics.operatingExpenseRatio)}
+            color={metrics.operatingExpenseRatio < 0.5 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}
+          />
+        </div>
+      )}
+
+      {/* Financial breakdown + Property info grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-6">
         {/* Purchase & Valuation */}
         <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
@@ -167,11 +236,117 @@ export default async function PropertyDetailPage({
           </h2>
           <div className="space-y-4">
             <Stat label="Balance" value={fmt(property.mortgage_balance)} icon={CreditCard} />
-            <Stat label="Rate" value={property.mortgage_rate != null ? fmt(property.mortgage_rate, 'percent') : '—'} icon={Percent} />
+            <Stat label="Rate" value={property.mortgage_rate != null ? fmt(Number(property.mortgage_rate), 'percent') : '—'} icon={Percent} />
             <Stat label="Monthly payment" value={fmt(property.mortgage_payment)} icon={DollarSign} />
+            {metrics?.dscr != null && (
+              <Stat label="DSCR" value={metrics.dscr.toFixed(2) + 'x'} icon={Activity} />
+            )}
+            {metrics?.grm != null && (
+              <Stat label="GRM" value={metrics.grm.toFixed(1) + 'x'} icon={BarChart3} />
+            )}
           </div>
         </div>
       </div>
+
+      {/* Income & Expense breakdown */}
+      {metrics && (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-6">
+          <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">
+              Income
+            </h2>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-700">Gross Rental Income</span>
+                <span className="text-sm font-semibold text-gray-900">{formatCurrency(metrics.grossIncome)}</span>
+              </div>
+              {metrics.otherIncome > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-700">Other Income</span>
+                  <span className="text-sm font-semibold text-gray-900">{formatCurrency(metrics.otherIncome)}</span>
+                </div>
+              )}
+              <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-900">Net Income (Cash)</span>
+                <span className={`text-sm font-bold ${metrics.netIncomeCash >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(metrics.netIncomeCash)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">
+              Expenses
+            </h2>
+            <div className="space-y-2">
+              {metrics.expenseBreakdown.map((item) => (
+                <div key={item.name}>
+                  <div className="flex justify-between items-center text-sm mb-0.5">
+                    <span className="text-gray-700">{item.name}</span>
+                    <span className="font-medium text-gray-900">{formatCurrency(item.amount)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-blue-400"
+                      style={{ width: `${Math.max(item.pct * 100, 2)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="border-t border-gray-100 pt-2 flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-900">Total (excl. depreciation)</span>
+                <span className="text-sm font-bold text-gray-900">
+                  {formatCurrency(metrics.totalExpensesExDepreciation)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Insights */}
+      {insights && insights.length > 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Brain className="h-4 w-4 text-violet-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              AI Insights
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {insights.map((insight: { id: string; insight_type: string; content: string; generated_at: string; model_used: string }) => (
+              <div key={insight.id} className="rounded-lg bg-violet-50 border border-violet-100 px-4 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-medium text-violet-600 capitalize">
+                    {insight.insight_type.replace(/_/g, ' ')}
+                  </span>
+                  <span className="text-[11px] text-violet-400">
+                    {new Date(insight.generated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+                <p className="text-sm text-violet-900 whitespace-pre-wrap">{insight.content}</p>
+                <p className="text-[11px] text-violet-400 mt-1">via {insight.model_used}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No financial data notice */}
+      {!hasFinancials && (
+        <div className="rounded-xl border border-gray-200 bg-white px-6 py-8 shadow-sm mb-6 text-center">
+          <BarChart3 className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+          <p className="text-sm font-medium text-gray-900">No financial data yet</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Connect QuickBooks in{' '}
+            <Link href="/dashboard/settings" className="text-blue-600 hover:text-blue-800 font-medium">
+              Settings
+            </Link>{' '}
+            and run a sync to see income, expenses, and analytics.
+          </p>
+        </div>
+      )}
 
       {/* QBO + Notes */}
       {(property.qbo_class_name || property.notes) && (
