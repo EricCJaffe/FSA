@@ -1,6 +1,6 @@
 # Tasks
 
-_Last updated: 2026-03-12_
+_Last updated: 2026-03-13_
 
 ---
 
@@ -47,21 +47,26 @@ _Last updated: 2026-03-12_
 - [ ] **Get P&L by Class** — per-property income/expense breakdown (manual export from QBO)
 - [ ] Build CSV/text import flow for financial data
 - [ ] QBO API OAuth flow — deferred until dashboards are solid
-- [ ] QBO API sync engine — deferred
+- [x] QBO API OAuth flow + sync engine (live, `summarize_column_by: 'Classes'`)
 - [ ] Sync status UI — deferred
 
 ### Analytics Dashboards (next up)
 - [ ] Per-property metrics: NOI, Cap Rate, Cash-on-Cash, DSCR, GRM, OER
 - [ ] Portfolio-level rollup dashboard (`/dashboard/portfolio`)
+- [ ] Date range picker for dashboard/portfolio (replace hardcoded 2025-12-31)
+- [ ] Wire up balance sheet data from `financial_line_items` (replace hardcoded values on portfolio page)
 - [ ] Month-over-month and YoY trend charts
+- [ ] Period comparison — MoM and YoY delta indicators on metric cards
 - [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
 
 ### AI Insights Engine (FSA)
-- [ ] Multi-model routing logic (Claude primary, GPT-4o fallback)
-- [ ] Property health summary generation
-- [ ] Anomaly detection (point / contextual / structural)
-- [ ] Persist insights to `ai_insights` with model + context snapshot
-- [ ] Monthly narrative generation
+- [x] Multi-model routing logic (GPT-4o primary, Claude fallback)
+- [x] Property health summary generation
+- [x] Anomaly detection (point / contextual / structural)
+- [x] Persist insights to `ai_insights` with model + context snapshot
+- [x] Monthly narrative generation
+- [x] AI Property Lookup — market analysis + financial insights on property detail page
+- [ ] Property valuation data source (Zillow Zestimate API, Redfin, or similar) for current estimated values
 
 ### Monthly Reports (FSA)
 - [ ] Monthly report generation workflow
@@ -149,3 +154,5 @@ _Last updated: 2026-03-12_
 - [x] 2026-03-12 — Property registry: list, detail, add/edit pages + server actions
 - [x] 2026-03-12 — Seed 5 properties from QBO Classes + import Balance Sheet & P&L data
 - [x] 2026-03-12 — QBO Integration Plan documented (`docs/QBO_INTEGRATION_PLAN.md`)
+- [x] 2026-03-13 — QBO API live sync working (P&L by Class + Balance Sheet, 25 records)
+- [x] 2026-03-13 — AI Property Lookup feature on property detail page (market analysis + financial insights)

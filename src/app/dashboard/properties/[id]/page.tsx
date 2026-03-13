@@ -24,6 +24,7 @@ import {
   Activity,
   Brain,
 } from 'lucide-react'
+import AiPropertyLookup from '@/components/property/AiPropertyLookup'
 
 function fmt(value: number | null, style: 'currency' | 'percent' | 'decimal' = 'currency') {
   if (value == null) return '—'
@@ -304,6 +305,18 @@ export default async function PropertyDetailPage({
           </div>
         </div>
       )}
+
+      {/* AI Property Lookup */}
+      <AiPropertyLookup
+        propertyId={property.id}
+        propertyName={property.name}
+        address={
+          [property.address, property.city, property.state, property.zip]
+            .filter(Boolean)
+            .join(', ') || null
+        }
+        hasFinancials={hasFinancials}
+      />
 
       {/* AI Insights */}
       {insights && insights.length > 0 && (
