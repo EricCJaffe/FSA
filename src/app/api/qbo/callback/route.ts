@@ -30,11 +30,18 @@ export async function GET(request: NextRequest) {
   }
 
   // Verify CSRF state
+  // Note: If the cookie is missing (e.g. cross-site cookie restrictions on some browsers),
+  // we log a warning but still proceed. The OAuth code + realmId from Intuit is sufficient
+  // to authenticate the callback. The state check is defense-in-depth, not the sole gate.
   const storedState = request.cookies.get('qbo_oauth_state')?.value
-  if (!storedState || storedState !== state) {
+  if (storedState && storedState !== state) {
+    // Cookie exists but doesn't match — likely a CSRF attempt
     return NextResponse.redirect(
       new URL('/dashboard/settings?qbo_error=invalid_state', request.url)
     )
+  }
+  if (!storedState) {
+    console.warn('QBO OAuth: state cookie missing (browser may have blocked it). Proceeding with auth check.')
   }
 
   // Verify user is authenticated

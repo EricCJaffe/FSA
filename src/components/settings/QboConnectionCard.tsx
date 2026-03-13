@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Link2, Link2Off, ExternalLink, CheckCircle2, AlertCircle, Plus, Building2 } from 'lucide-react'
 
@@ -16,10 +17,35 @@ interface Props {
   isAdmin: boolean
 }
 
-export default function QboConnectionCard({ connections, isAdmin }: Props) {
+function QboStatusMessages() {
   const searchParams = useSearchParams()
   const justConnected = searchParams.get('qbo_connected') === 'true'
   const qboError = searchParams.get('qbo_error')
+
+  return (
+    <>
+      {justConnected && (
+        <div className="border-t border-gray-100 px-6 py-3 bg-emerald-50">
+          <p className="flex items-center gap-2 text-sm text-emerald-700">
+            <CheckCircle2 className="h-4 w-4" />
+            QuickBooks company connected successfully! You can now sync financial data.
+          </p>
+        </div>
+      )}
+
+      {qboError && (
+        <div className="border-t border-gray-100 px-6 py-3 bg-red-50">
+          <p className="flex items-center gap-2 text-sm text-red-600">
+            <AlertCircle className="h-4 w-4" />
+            Connection failed: {qboError.replace(/_/g, ' ')}
+          </p>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default function QboConnectionCard({ connections, isAdmin }: Props) {
   const hasConnections = connections.length > 0
 
   return (
@@ -102,24 +128,10 @@ export default function QboConnectionCard({ connections, isAdmin }: Props) {
         )}
       </div>
 
-      {/* Status messages */}
-      {justConnected && (
-        <div className="border-t border-gray-100 px-6 py-3 bg-emerald-50">
-          <p className="flex items-center gap-2 text-sm text-emerald-700">
-            <CheckCircle2 className="h-4 w-4" />
-            QuickBooks company connected successfully! You can now sync financial data.
-          </p>
-        </div>
-      )}
-
-      {qboError && (
-        <div className="border-t border-gray-100 px-6 py-3 bg-red-50">
-          <p className="flex items-center gap-2 text-sm text-red-600">
-            <AlertCircle className="h-4 w-4" />
-            Connection failed: {qboError.replace(/_/g, ' ')}
-          </p>
-        </div>
-      )}
+      {/* Status messages — wrapped in Suspense for useSearchParams */}
+      <Suspense fallback={null}>
+        <QboStatusMessages />
+      </Suspense>
 
       {!hasConnections && !isAdmin && (
         <div className="border-t border-gray-100 px-6 py-3 bg-gray-50">
