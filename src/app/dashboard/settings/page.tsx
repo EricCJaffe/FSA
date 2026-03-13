@@ -15,12 +15,12 @@ export default async function SettingsPage() {
     .limit(1)
     .single()
 
-  // Get QBO connection
-  const { data: connection } = await supabase
+  // Get all QBO connections for this org
+  const { data: connections } = await supabase
     .from('qbo_connections')
-    .select('id, realm_id, connected_at, token_expires_at')
+    .select('id, realm_id, company_name, connected_at, token_expires_at')
     .eq('org_id', role?.org_id ?? '')
-    .single()
+    .order('connected_at', { ascending: false })
 
   // Get recent syncs
   const { data: syncs } = await supabase
@@ -28,9 +28,10 @@ export default async function SettingsPage() {
     .select('*')
     .eq('org_id', role?.org_id ?? '')
     .order('created_at', { ascending: false })
-    .limit(5)
+    .limit(10)
 
   const isAdmin = role?.role === 'family_office_admin' || role?.role === 'org_admin'
+  const qboConnections = connections ?? []
 
   return (
     <div className="p-8 max-w-3xl">
@@ -46,13 +47,17 @@ export default async function SettingsPage() {
 
       <div className="space-y-6">
         <QboConnectionCard
-          connected={!!connection}
-          realmId={connection?.realm_id ?? null}
-          connectedAt={connection?.connected_at ?? null}
+          connections={qboConnections.map((c) => ({
+            id: c.id,
+            realmId: c.realm_id,
+            companyName: c.company_name,
+            connectedAt: c.connected_at,
+            tokenExpiresAt: c.token_expires_at,
+          }))}
           isAdmin={isAdmin}
         />
 
-        {connection && (
+        {qboConnections.length > 0 && (
           <QboSyncCard
             syncs={(syncs ?? []).map((s) => ({
               id: s.id,

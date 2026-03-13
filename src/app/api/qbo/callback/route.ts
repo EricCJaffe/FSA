@@ -89,7 +89,31 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Upsert QBO connection (one per org)
+  // Fetch company name from QBO
+  const qboBaseUrl = process.env.QBO_ENVIRONMENT === 'production'
+    ? 'https://quickbooks.api.intuit.com'
+    : 'https://sandbox-quickbooks.api.intuit.com'
+
+  let companyName: string | null = null
+  try {
+    const companyRes = await fetch(
+      `${qboBaseUrl}/v3/company/${realmId}/companyinfo/${realmId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${tokens.access_token}`,
+          'Accept': 'application/json',
+        },
+      }
+    )
+    if (companyRes.ok) {
+      const companyData = await companyRes.json()
+      companyName = companyData.CompanyInfo?.CompanyName ?? null
+    }
+  } catch {
+    // Non-fatal — we still save the connection
+  }
+
+  // Upsert QBO connection (one per org+realm, supports multiple companies)
   const { error: upsertError } = await supabase
     .from('qbo_connections')
     .upsert(
@@ -101,8 +125,9 @@ export async function GET(request: NextRequest) {
         token_expires_at: expiresAt,
         connected_by: user.id,
         connected_at: new Date().toISOString(),
+        company_name: companyName,
       },
-      { onConflict: 'org_id' }
+      { onConflict: 'org_id,realm_id' }
     )
 
   if (upsertError) {

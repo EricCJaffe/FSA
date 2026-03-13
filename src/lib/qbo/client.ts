@@ -3,6 +3,8 @@
  *
  * Handles authenticated requests to the QBO REST API,
  * including automatic token refresh when access tokens expire.
+ *
+ * Supports multiple QBO connections per org (one per realm/company).
  */
 
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
@@ -74,15 +76,22 @@ async function refreshTokens(refreshToken: string): Promise<{
 
 /**
  * Get valid QBO tokens for an org, refreshing if expired.
+ * If realmId is provided, gets that specific company's connection.
+ * Otherwise gets the first available connection.
  */
-export async function getQboTokens(orgId: string): Promise<QboTokens | null> {
+export async function getQboTokens(orgId: string, realmId?: string): Promise<QboTokens | null> {
   const supabase = getAdminClient()
 
-  const { data: conn, error } = await supabase
+  let query = supabase
     .from('qbo_connections')
     .select('*')
     .eq('org_id', orgId)
-    .single()
+
+  if (realmId) {
+    query = query.eq('realm_id', realmId)
+  }
+
+  const { data: conn, error } = await query.limit(1).single()
 
   if (error || !conn) return null
 
@@ -126,14 +135,30 @@ export async function getQboTokens(orgId: string): Promise<QboTokens | null> {
 }
 
 /**
+ * List all QBO connections for an org.
+ */
+export async function listQboConnections(orgId: string) {
+  const supabase = getAdminClient()
+
+  const { data } = await supabase
+    .from('qbo_connections')
+    .select('id, realm_id, company_name, connected_at, token_expires_at')
+    .eq('org_id', orgId)
+    .order('connected_at', { ascending: false })
+
+  return data ?? []
+}
+
+/**
  * Make an authenticated GET request to the QBO API.
  */
 export async function qboGet<T = unknown>(
   orgId: string,
   path: string,
-  params?: Record<string, string>
+  params?: Record<string, string>,
+  realmId?: string
 ): Promise<T> {
-  const tokens = await getQboTokens(orgId)
+  const tokens = await getQboTokens(orgId, realmId)
   if (!tokens) throw new Error('No QBO connection found or tokens expired')
 
   const url = new URL(`/v3/company/${tokens.realm_id}${path}`, QBO_BASE_URL)
@@ -164,7 +189,8 @@ export async function qboGet<T = unknown>(
  */
 export async function qboQuery<T = unknown>(
   orgId: string,
-  query: string
+  query: string,
+  realmId?: string
 ): Promise<T> {
-  return qboGet(orgId, '/query', { query })
+  return qboGet(orgId, '/query', { query }, realmId)
 }

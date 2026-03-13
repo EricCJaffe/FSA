@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 /**
  * GET /api/qbo/status
  * Returns QBO connection status and recent sync history for the user's org.
+ * Supports multiple QBO connections per org.
  */
 export async function GET() {
   const supabase = await createClient()
@@ -24,12 +25,12 @@ export async function GET() {
     return NextResponse.json({ error: 'No organization found' }, { status: 400 })
   }
 
-  // Get connection
-  const { data: connection } = await supabase
+  // Get all connections
+  const { data: connections } = await supabase
     .from('qbo_connections')
-    .select('id, realm_id, connected_at, token_expires_at')
+    .select('id, realm_id, company_name, connected_at, token_expires_at')
     .eq('org_id', role.org_id)
-    .single()
+    .order('connected_at', { ascending: false })
 
   // Get recent syncs
   const { data: syncs } = await supabase
@@ -40,14 +41,14 @@ export async function GET() {
     .limit(10)
 
   return NextResponse.json({
-    connected: !!connection,
-    connection: connection
-      ? {
-          realmId: connection.realm_id,
-          connectedAt: connection.connected_at,
-          tokenExpiresAt: connection.token_expires_at,
-        }
-      : null,
+    connected: (connections ?? []).length > 0,
+    connections: (connections ?? []).map((c) => ({
+      id: c.id,
+      realmId: c.realm_id,
+      companyName: c.company_name,
+      connectedAt: c.connected_at,
+      tokenExpiresAt: c.token_expires_at,
+    })),
     syncs: syncs ?? [],
   })
 }
