@@ -46,15 +46,16 @@ _Last updated: 2026-03-13_
 - [x] Import Balance Sheet + P&L data (portfolio-level, 2025)
 - [ ] **Get P&L by Class** — per-property income/expense breakdown (manual export from QBO)
 - [ ] Build CSV/text import flow for financial data
-- [ ] QBO API OAuth flow — deferred until dashboards are solid
+- [x] QBO API OAuth flow — completed
 - [x] QBO API OAuth flow + sync engine (live, `summarize_column_by: 'Classes'`)
-- [ ] Sync status UI — deferred
+- [x] Sync status UI (settings page — trigger sync + view history)
 
-### Analytics Dashboards (next up)
-- [ ] Per-property metrics: NOI, Cap Rate, Cash-on-Cash, DSCR, GRM, OER
-- [ ] Portfolio-level rollup dashboard (`/dashboard/portfolio`)
-- [ ] Date range picker for dashboard/portfolio (replace hardcoded 2025-12-31)
-- [ ] Wire up balance sheet data from `financial_line_items` (replace hardcoded values on portfolio page)
+### Analytics Dashboards
+- [x] Per-property metrics: NOI, Cap Rate, Cash-on-Cash, DSCR, GRM, OER
+- [x] Portfolio-level rollup dashboard (`/dashboard/portfolio`)
+- [x] Date range picker for dashboard/portfolio (URL param-based, preset buttons + custom dates)
+- [x] Wire up real balance sheet data from `financial_line_items` (replaced hardcoded values)
+- [x] Dashboard auto-detects latest synced period
 - [ ] Month-over-month and YoY trend charts
 - [ ] Period comparison — MoM and YoY delta indicators on metric cards
 - [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
@@ -69,8 +70,9 @@ _Last updated: 2026-03-13_
 - [ ] Property valuation data source (Zillow Zestimate API, Redfin, or similar) for current estimated values
 
 ### Monthly Reports (FSA)
-- [ ] Monthly report generation workflow
-- [ ] Report viewer UI
+- [x] Monthly report generation workflow (with AI narrative)
+- [x] Report viewer UI (metrics, expense breakdown, per-property, AI analysis)
+- [x] Publish/unpublish toggle on report detail page
 - [ ] Commentary/annotation system
 - [ ] SendGrid notification on report publish
 
@@ -156,3 +158,8 @@ _Last updated: 2026-03-13_
 - [x] 2026-03-12 — QBO Integration Plan documented (`docs/QBO_INTEGRATION_PLAN.md`)
 - [x] 2026-03-13 — QBO API live sync working (P&L by Class + Balance Sheet, 25 records)
 - [x] 2026-03-13 — AI Property Lookup feature on property detail page (market analysis + financial insights)
+- [x] 2026-03-13 — Date range picker on portfolio page (URL params, presets, custom dates)
+- [x] 2026-03-13 — Real balance sheet data on portfolio page (replaced hardcoded values)
+- [x] 2026-03-13 — Dashboard auto-detects latest synced period, shows real cash on hand
+- [x] 2026-03-13 — Updated dashboard phase tracker + added Reports and Settings module cards
+- [x] 2026-03-13 — Report publish/unpublish toggle + maxDuration on report/insight routes

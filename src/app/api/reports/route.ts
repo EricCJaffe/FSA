@@ -9,6 +9,9 @@ import {
 import { generatePortfolioNarrative } from '@/lib/ai/insights'
 import type { Property } from '@/types'
 
+// Allow up to 60s for AI narrative generation
+export const maxDuration = 60
+
 /**
  * POST /api/reports
  * Generate a monthly report for a given period.

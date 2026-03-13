@@ -9,9 +9,8 @@ import {
   TrendingUp,
   BarChart3,
   Brain,
-  CheckCircle2,
-  Clock,
 } from 'lucide-react'
+import PublishButton from '@/components/reports/PublishButton'
 
 interface ReportSummary {
   period: { year: number; month: number }
@@ -98,17 +97,7 @@ export default async function ReportDetailPage({
             </p>
           </div>
         </div>
-        {report.published ? (
-          <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Published
-          </span>
-        ) : (
-          <span className="flex items-center gap-1.5 rounded-full bg-gray-50 border border-gray-200 px-3 py-1 text-xs font-medium text-gray-500">
-            <Clock className="h-3.5 w-3.5" />
-            Draft
-          </span>
-        )}
+        <PublishButton reportId={report.id} initialPublished={report.published} />
       </div>
 
       {summary && (
