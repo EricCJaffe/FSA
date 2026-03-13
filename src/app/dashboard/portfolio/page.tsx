@@ -88,22 +88,48 @@ function computeBalanceSheetTotals(items: FinancialLineItem[]) {
   let totalEquity = 0
   let cashOnHand = 0
 
+  const assetLines: { name: string; amount: number }[] = []
+  const liabilityLines: { name: string; amount: number }[] = []
+  const equityLines: { name: string; amount: number }[] = []
+
   for (const item of items) {
     const amount = Number(item.amount)
     if (item.account_type === 'asset') {
       totalAssets += amount
+      assetLines.push({ name: item.account_name, amount })
       const name = item.account_name.toLowerCase()
       if (name.includes('checking') || name.includes('savings') || name.includes('cash') || name.includes('bank')) {
         cashOnHand += amount
       }
     } else if (item.account_type === 'liability') {
       totalLiabilities += amount
+      liabilityLines.push({ name: item.account_name, amount })
     } else if (item.account_type === 'equity') {
       totalEquity += amount
+      equityLines.push({ name: item.account_name, amount })
     }
   }
 
-  return { totalAssets, totalLiabilities, totalEquity, cashOnHand }
+  // Merge duplicate account names
+  function mergeLines(lines: { name: string; amount: number }[]) {
+    const map = new Map<string, number>()
+    for (const l of lines) {
+      map.set(l.name, (map.get(l.name) ?? 0) + l.amount)
+    }
+    return Array.from(map.entries())
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+  }
+
+  return {
+    totalAssets,
+    totalLiabilities,
+    totalEquity,
+    cashOnHand,
+    assetLines: mergeLines(assetLines),
+    liabilityLines: mergeLines(liabilityLines),
+    equityLines: mergeLines(equityLines),
+  }
 }
 
 export default async function PortfolioPage({
@@ -174,19 +200,13 @@ export default async function PortfolioPage({
   const hasPrior = priorMetrics !== null
   const deltaLabel = 'vs prior period'
 
-  // Fetch all P&L data for trend chart (last 12 months from end date)
-  const trendStart = new Date(periodEnd + 'T00:00:00')
-  trendStart.setMonth(trendStart.getMonth() - 11)
-  trendStart.setDate(1)
-  const trendStartStr = trendStart.toISOString().split('T')[0]
-
+  // Fetch ALL P&L data for trend chart (all available months)
   const { data: trendData } = await supabase
     .from('financial_line_items')
     .select('account_type, amount, period_date')
     .eq('org_id', orgId)
-    .gte('period_date', trendStartStr)
-    .lte('period_date', periodEnd)
     .in('account_type', ['income', 'other_income', 'expense'])
+    .order('period_date')
 
   // Group by month for trend chart
   const monthMap = new Map<string, { income: number; expenses: number }>()
@@ -313,6 +333,67 @@ export default async function PortfolioPage({
           color={hasBsData && bs.totalLiabilities < 10000 ? 'text-emerald-600 bg-emerald-50' : 'text-orange-600 bg-orange-50'}
         />
       </div>
+
+      {/* Balance sheet detail */}
+      {hasBsData && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-6">
+          {/* Assets */}
+          <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Assets</h3>
+              <span className="text-sm font-bold text-gray-900">{formatCurrency(bs.totalAssets)}</span>
+            </div>
+            <div className="space-y-1.5">
+              {bs.assetLines.map((line) => (
+                <div key={line.name} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 truncate mr-2">{line.name}</span>
+                  <span className="font-medium text-gray-900 whitespace-nowrap">{formatCurrency(line.amount)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Liabilities */}
+          <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Liabilities</h3>
+              <span className="text-sm font-bold text-gray-900">{formatCurrency(bs.totalLiabilities)}</span>
+            </div>
+            {bs.liabilityLines.length > 0 ? (
+              <div className="space-y-1.5">
+                {bs.liabilityLines.map((line) => (
+                  <div key={line.name} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 truncate mr-2">{line.name}</span>
+                    <span className="font-medium text-gray-900 whitespace-nowrap">{formatCurrency(line.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 italic">No liabilities recorded</p>
+            )}
+          </div>
+
+          {/* Equity */}
+          <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Equity</h3>
+              <span className="text-sm font-bold text-gray-900">{formatCurrency(bs.totalEquity)}</span>
+            </div>
+            {bs.equityLines.length > 0 ? (
+              <div className="space-y-1.5">
+                {bs.equityLines.map((line) => (
+                  <div key={line.name} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 truncate mr-2">{line.name}</span>
+                    <span className="font-medium text-gray-900 whitespace-nowrap">{formatCurrency(line.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 italic">No equity data</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Trend chart */}
       <div className="mb-6">
