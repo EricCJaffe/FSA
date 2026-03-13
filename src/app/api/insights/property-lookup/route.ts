@@ -8,10 +8,17 @@ import { generateAllPropertyInsights } from '@/lib/ai/insights'
 import { generateAiContent } from '@/lib/ai/client'
 import type { Property } from '@/types'
 
+// Allow up to 60s for AI calls
+export const maxDuration = 60
+
 /**
  * POST /api/insights/property-lookup
- * AI-powered property research: market analysis + financial insights.
- * Body: { propertyId: string }
+ * AI-powered property research.
+ *
+ * Body: { propertyId: string, mode?: 'market' | 'financial' | 'all' }
+ *  - 'market' (default): just market analysis (1 AI call, fast)
+ *  - 'financial': health + anomaly + hold/sell (3 AI calls, needs financials)
+ *  - 'all': both market + financial (4 AI calls, slower)
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -32,8 +39,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No organization found' }, { status: 400 })
   }
 
-  const body = await request.json()
-  const { propertyId } = body
+  let body: { propertyId?: string; mode?: string }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const { propertyId, mode = 'market' } = body
 
   if (!propertyId) {
     return NextResponse.json({ error: 'propertyId is required' }, { status: 400 })
@@ -52,13 +65,17 @@ export async function POST(request: NextRequest) {
     const p = property as Property
     const items = (financials ?? []) as FinancialLineItem[]
 
-    // 1. Always generate market analysis (works with or without financials)
-    const addressParts = [p.address, p.city, p.state, p.zip].filter(Boolean)
-    const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : null
+    let marketAnalysis = undefined
+    let insights = undefined
 
-    const marketSystemPrompt = `You are a real estate market analyst specializing in Jacksonville, FL and surrounding areas. You provide concise, data-informed analysis based on your knowledge of local market conditions, neighborhoods, trends, and comparable properties. Be specific and cite market context. Keep responses under 400 words.`
+    // Market analysis
+    if (mode === 'market' || mode === 'all') {
+      const addressParts = [p.address, p.city, p.state, p.zip].filter(Boolean)
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : null
 
-    const marketUserPrompt = `Research and analyze this rental property:
+      const marketSystemPrompt = `You are a real estate market analyst specializing in Jacksonville, FL and surrounding areas. You provide concise, data-informed analysis based on your knowledge of local market conditions, neighborhoods, trends, and comparable properties. Be specific and cite market context. Keep responses under 400 words.`
+
+      const marketUserPrompt = `Research and analyze this rental property:
 
 Property: ${p.name}
 ${fullAddress ? `Address: ${fullAddress}` : 'Address: Not provided'}
@@ -81,11 +98,11 @@ Provide a market analysis covering:
 
 ${!fullAddress ? 'Note: No address provided — provide general Jacksonville market analysis for this property type.' : ''}`
 
-    const marketAnalysis = await generateAiContent(marketUserPrompt, marketSystemPrompt)
+      marketAnalysis = await generateAiContent(marketUserPrompt, marketSystemPrompt)
+    }
 
-    // 2. If financials exist, also run the full financial insights suite
-    let insights = undefined
-    if (items.length > 0) {
+    // Financial insights (requires financials)
+    if ((mode === 'financial' || mode === 'all') && items.length > 0) {
       const metrics = computePropertyMetrics(items, {
         id: p.id,
         name: p.name,
@@ -106,9 +123,12 @@ ${!fullAddress ? 'Note: No address provided — provide general Jacksonville mar
     })
   } catch (err) {
     console.error('Property lookup failed:', err)
+    const message = err instanceof Error ? err.message : 'Property lookup failed'
+    // Distinguish AI provider errors for better client messaging
+    const isAiError = message.includes('API error') || message.includes('not configured')
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Property lookup failed' },
-      { status: 500 }
+      { error: message, isAiError },
+      { status: isAiError ? 502 : 500 }
     )
   }
 }
