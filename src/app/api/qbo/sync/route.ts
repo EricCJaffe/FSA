@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { runFullSync } from '@/lib/qbo/sync'
 
+// Allow up to 60s for QBO API calls
+export const maxDuration = 60
+
 /**
  * POST /api/qbo/sync
  * Triggers a full QBO sync for the user's org.

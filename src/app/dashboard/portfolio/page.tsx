@@ -26,12 +26,14 @@ function MetricCard({
   label,
   value,
   subtitle,
+  delta,
   icon: Icon,
   color = 'text-gray-600 bg-gray-50',
 }: {
   label: string
   value: string
   subtitle?: string
+  delta?: { value: number; label: string } | null
   icon: React.ElementType
   color?: string
 }) {
@@ -41,7 +43,12 @@ function MetricCard({
         <div>
           <p className="text-xs font-medium text-gray-400">{label}</p>
           <p className="mt-1 text-xl font-bold text-gray-900">{value}</p>
-          {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
+          {delta != null && delta.value !== 0 && (
+            <p className={`mt-0.5 text-xs font-medium ${delta.value > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              {delta.value > 0 ? '▲' : '▼'} {Math.abs(delta.value).toFixed(1)}% {delta.label}
+            </p>
+          )}
+          {subtitle && !delta && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
         </div>
         <div className={`rounded-lg p-2 ${color}`}>
           <Icon className="h-4 w-4" />
@@ -49,6 +56,26 @@ function MetricCard({
       </div>
     </div>
   )
+}
+
+/**
+ * Compute prior period date range (same duration, shifted back).
+ */
+function getPriorPeriod(start: string, end: string): { priorStart: string; priorEnd: string } {
+  const s = new Date(start + 'T00:00:00')
+  const e = new Date(end + 'T00:00:00')
+  const durationMs = e.getTime() - s.getTime()
+  const priorEnd = new Date(s.getTime() - 1) // day before current start
+  const priorStart = new Date(priorEnd.getTime() - durationMs)
+  return {
+    priorStart: priorStart.toISOString().split('T')[0],
+    priorEnd: priorEnd.toISOString().split('T')[0],
+  }
+}
+
+function pctChange(current: number, prior: number): number | null {
+  if (prior === 0) return null
+  return ((current - prior) / Math.abs(prior)) * 100
 }
 
 /**
@@ -101,8 +128,11 @@ export default async function PortfolioPage({
 
   const orgId = role?.org_id ?? '00000000-0000-0000-0000-000000000001'
 
-  // Fetch P&L data, balance sheet data, and properties in parallel
-  const [pnlRes, bsRes, propertiesRes] = await Promise.all([
+  // Compute prior period for comparison
+  const { priorStart, priorEnd } = getPriorPeriod(periodStart, periodEnd)
+
+  // Fetch current P&L, balance sheet, prior P&L, and properties in parallel
+  const [pnlRes, bsRes, priorPnlRes, propertiesRes] = await Promise.all([
     supabase
       .from('financial_line_items')
       .select('*')
@@ -118,6 +148,13 @@ export default async function PortfolioPage({
       .lte('period_date', periodEnd)
       .in('account_type', ['asset', 'liability', 'equity']),
     supabase
+      .from('financial_line_items')
+      .select('*')
+      .eq('org_id', orgId)
+      .gte('period_date', priorStart)
+      .lte('period_date', priorEnd)
+      .in('account_type', ['income', 'other_income', 'expense']),
+    supabase
       .from('properties')
       .select('*')
       .eq('active', true)
@@ -127,10 +164,14 @@ export default async function PortfolioPage({
 
   const pnlItems = (pnlRes.data ?? []) as FinancialLineItem[]
   const bsItems = (bsRes.data ?? []) as FinancialLineItem[]
+  const priorPnlItems = (priorPnlRes.data ?? []) as FinancialLineItem[]
   const properties = (propertiesRes.data ?? []) as Property[]
   const metrics = computePortfolioMetrics(pnlItems)
+  const priorMetrics = priorPnlItems.length > 0 ? computePortfolioMetrics(priorPnlItems) : null
   const bs = computeBalanceSheetTotals(bsItems)
   const hasBsData = bsItems.length > 0
+  const hasPrior = priorMetrics !== null
+  const deltaLabel = 'vs prior period'
 
   const ltrCount = properties.filter((p) => p.property_type === 'ltr').length
   const strCount = properties.filter((p) => p.property_type === 'str').length
@@ -161,28 +202,32 @@ export default async function PortfolioPage({
           <MetricCard
             label="Gross Rental Income"
             value={formatCurrency(metrics.grossIncome)}
-            subtitle={periodLabel}
+            subtitle={!hasPrior ? periodLabel : undefined}
+            delta={hasPrior ? { value: pctChange(metrics.grossIncome, priorMetrics.grossIncome) ?? 0, label: deltaLabel } : undefined}
             icon={DollarSign}
             color="text-emerald-600 bg-emerald-50"
           />
           <MetricCard
             label="NOI (Cash Basis)"
             value={formatCurrency(metrics.noiCash)}
-            subtitle={metrics.grossIncome > 0 ? `${formatPercent(metrics.noiCash / metrics.grossIncome)} margin` : undefined}
+            subtitle={!hasPrior && metrics.grossIncome > 0 ? `${formatPercent(metrics.noiCash / metrics.grossIncome)} margin` : undefined}
+            delta={hasPrior ? { value: pctChange(metrics.noiCash, priorMetrics.noiCash) ?? 0, label: deltaLabel } : undefined}
             icon={TrendingUp}
             color="text-blue-600 bg-blue-50"
           />
           <MetricCard
             label="Operating Expenses"
             value={formatCurrency(metrics.totalExpensesExDepreciation)}
-            subtitle={`OER: ${formatPercent(metrics.operatingExpenseRatio)}`}
+            subtitle={!hasPrior ? `OER: ${formatPercent(metrics.operatingExpenseRatio)}` : undefined}
+            delta={hasPrior ? { value: -(pctChange(metrics.totalExpensesExDepreciation, priorMetrics.totalExpensesExDepreciation) ?? 0), label: deltaLabel } : undefined}
             icon={TrendingDown}
             color="text-orange-600 bg-orange-50"
           />
           <MetricCard
             label="Net Income (GAAP)"
             value={formatCurrency(metrics.netIncome)}
-            subtitle={`Incl. ${formatCurrency(metrics.depreciation)} depreciation`}
+            subtitle={!hasPrior ? `Incl. ${formatCurrency(metrics.depreciation)} depreciation` : undefined}
+            delta={hasPrior ? { value: pctChange(metrics.netIncome, priorMetrics.netIncome) ?? 0, label: deltaLabel } : undefined}
             icon={BarChart3}
             color={metrics.netIncome >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}
           />

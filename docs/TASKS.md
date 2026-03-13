@@ -56,8 +56,10 @@ _Last updated: 2026-03-13_
 - [x] Date range picker for dashboard/portfolio (URL param-based, preset buttons + custom dates)
 - [x] Wire up real balance sheet data from `financial_line_items` (replaced hardcoded values)
 - [x] Dashboard auto-detects latest synced period
-- [ ] Month-over-month and YoY trend charts
-- [ ] Period comparison — MoM and YoY delta indicators on metric cards
+- [x] Period comparison — MoM/YoY delta indicators on portfolio metric cards (▲/▼ with %)
+- [x] Batch sync last 12 months button on settings page
+- [x] Populate missing property addresses button on properties page
+- [ ] Month-over-month and YoY trend charts (Recharts)
 - [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
 
 ### AI Insights Engine (FSA)
@@ -163,3 +165,6 @@ _Last updated: 2026-03-13_
 - [x] 2026-03-13 — Dashboard auto-detects latest synced period, shows real cash on hand
 - [x] 2026-03-13 — Updated dashboard phase tracker + added Reports and Settings module cards
 - [x] 2026-03-13 — Report publish/unpublish toggle + maxDuration on report/insight routes
+- [x] 2026-03-13 — Batch sync (last 12 months) button on settings sync card
+- [x] 2026-03-13 — Property address populate button + API (fills missing addresses with defaults)
+- [x] 2026-03-13 — MoM/YoY delta indicators on portfolio metric cards (▲/▼ % vs prior period)

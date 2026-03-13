@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Plus, Building2, Home, Palmtree, MapPin } from 'lucide-react'
 import type { Property } from '@/types'
+import PopulateAddressesButton from '@/components/property/PopulateAddressesButton'
 
 function formatCurrency(value: number | null) {
   if (value == null) return '—'
@@ -23,6 +24,7 @@ export default async function PropertiesPage() {
     .order('name')
 
   const items = (properties ?? []) as Property[]
+  const missingAddresses = items.filter((p) => !p.address || !p.city || !p.state).length
 
   return (
     <div className="p-8 max-w-5xl">
@@ -34,13 +36,16 @@ export default async function PropertiesPage() {
             {items.length} {items.length === 1 ? 'property' : 'properties'} in portfolio
           </p>
         </div>
-        <Link
+        <div className="flex items-center gap-3">
+          <PopulateAddressesButton missingCount={missingAddresses} />
+          <Link
           href="/dashboard/properties/new"
           className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
         >
-          <Plus className="h-4 w-4" />
-          Add property
-        </Link>
+            <Plus className="h-4 w-4" />
+            Add property
+          </Link>
+        </div>
       </div>
 
       {error && (

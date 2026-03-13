@@ -49,34 +49,97 @@ export default function QboSyncCard({ syncs, isAdmin }: Props) {
   const currentYear = new Date().getFullYear()
   const [startDate, setStartDate] = useState(`${currentYear}-01-01`)
   const [endDate, setEndDate] = useState(`${currentYear}-12-31`)
+  const [batchProgress, setBatchProgress] = useState<string | null>(null)
+
+  async function syncPeriod(start: string, end: string): Promise<{ ok: boolean; message: string }> {
+    const res = await fetch('/api/qbo/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ startDate: start, endDate: end }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { ok: false, message: data.error || 'Sync failed' }
+    return {
+      ok: true,
+      message: `${data.pnl.inserted} P&L + ${data.balanceSheet.inserted} BS lines`,
+    }
+  }
 
   async function handleSync() {
     setSyncing(true)
     setError(null)
     setSuccess(null)
+    setBatchProgress(null)
 
     try {
-      const res = await fetch('/api/qbo/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startDate, endDate }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Sync failed')
+      const result = await syncPeriod(startDate, endDate)
+      if (!result.ok) {
+        setError(result.message)
       } else {
-        setSuccess(
-          `Synced ${data.classes.matched} classes, ${data.pnl.inserted} P&L lines, ${data.balanceSheet.inserted} balance sheet lines`
-        )
-        // Reload to refresh sync history
+        setSuccess(`Synced: ${result.message}`)
         window.location.reload()
       }
     } catch {
       setError('Network error — check your connection')
     } finally {
       setSyncing(false)
+    }
+  }
+
+  async function handleBatchSync() {
+    setSyncing(true)
+    setError(null)
+    setSuccess(null)
+    setBatchProgress(null)
+
+    const months: { start: string; end: string; label: string }[] = []
+    const now = new Date()
+
+    // Build last 12 months
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const year = d.getFullYear()
+      const month = d.getMonth()
+      const start = `${year}-${String(month + 1).padStart(2, '0')}-01`
+      const lastDay = new Date(year, month + 1, 0).getDate()
+      const end = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+      const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      months.push({ start, end, label })
+    }
+
+    let totalRecords = 0
+    let failures = 0
+
+    try {
+      for (let i = 0; i < months.length; i++) {
+        const m = months[i]
+        setBatchProgress(`Syncing ${m.label} (${i + 1}/${months.length})...`)
+
+        try {
+          const result = await syncPeriod(m.start, m.end)
+          if (result.ok) {
+            totalRecords++
+          } else {
+            failures++
+            console.warn(`Sync failed for ${m.label}:`, result.message)
+          }
+        } catch {
+          failures++
+        }
+      }
+
+      setSuccess(
+        `Batch sync complete: ${months.length - failures}/${months.length} months synced.${
+          failures > 0 ? ` ${failures} failed.` : ''
+        }`
+      )
+      setBatchProgress(null)
+      window.location.reload()
+    } catch {
+      setError('Batch sync interrupted — check your connection')
+    } finally {
+      setSyncing(false)
+      setBatchProgress(null)
     }
   }
 
@@ -120,12 +183,24 @@ export default function QboSyncCard({ syncs, isAdmin }: Props) {
               disabled={syncing}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {syncing ? (
+              {syncing && !batchProgress ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <RefreshCw className="h-4 w-4" />
               )}
-              {syncing ? 'Syncing...' : 'Sync now'}
+              {syncing && !batchProgress ? 'Syncing...' : 'Sync period'}
+            </button>
+            <button
+              onClick={handleBatchSync}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {batchProgress ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              {batchProgress || 'Sync last 12 months'}
             </button>
           </div>
         )}
