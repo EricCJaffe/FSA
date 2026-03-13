@@ -12,6 +12,32 @@ import {
 } from 'lucide-react'
 import PublishButton from '@/components/reports/PublishButton'
 import ReportCommentary from '@/components/reports/ReportCommentary'
+import TrendChart from '@/components/dashboard/TrendChart'
+
+function DeltaBadge({ change, label, invert }: { change: number | null; label: string; invert?: boolean }) {
+  if (change == null || change === 0) return null
+  const positive = invert ? change < 0 : change > 0
+  return (
+    <p className={`text-[11px] font-medium ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
+      {change > 0 ? '+' : ''}{change.toFixed(1)}% {label}
+    </p>
+  )
+}
+
+interface PeriodComparison {
+  grossIncome: { value: number; change: number | null }
+  noiCash: { value: number; change: number | null }
+  totalExpenses: { value: number; change: number | null }
+  netIncome: { value: number; change: number | null }
+  oer: number
+}
+
+interface TrendDataPoint {
+  month: string
+  income: number
+  expenses: number
+  noi: number
+}
 
 interface ReportSummary {
   period: { year: number; month: number }
@@ -25,6 +51,11 @@ interface ReportSummary {
     netIncome: number
     expenseBreakdown: { name: string; amount: number; pct: number }[]
   }
+  comparisons?: {
+    mom: PeriodComparison | null
+    yoy: PeriodComparison | null
+  }
+  trend?: TrendDataPoint[]
   properties: {
     id: string
     name: string
@@ -68,6 +99,10 @@ export default async function ReportDetailPage({
       })
     : `${report.period_year}-${String(report.period_month).padStart(2, '0')}`
 
+  const mom = summary?.comparisons?.mom ?? null
+  const yoy = summary?.comparisons?.yoy ?? null
+  const trendData = summary?.trend ?? []
+
   return (
     <div className="p-8 max-w-4xl">
       {/* Back */}
@@ -104,29 +139,52 @@ export default async function ReportDetailPage({
 
       {summary && (
         <>
-          {/* Top metrics */}
+          {/* Top metrics with comparisons */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
             <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <DollarSign className="h-4 w-4 text-emerald-500 mb-1" />
               <p className="text-lg font-bold text-gray-900">{formatCurrency(summary.portfolio.grossIncome)}</p>
               <p className="text-[11px] text-gray-400">Gross income</p>
+              {mom && <DeltaBadge change={mom.grossIncome.change} label="MoM" />}
+              {yoy && <DeltaBadge change={yoy.grossIncome.change} label="YoY" />}
             </div>
             <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <TrendingUp className="h-4 w-4 text-blue-500 mb-1" />
               <p className="text-lg font-bold text-gray-900">{formatCurrency(summary.portfolio.noiCash)}</p>
               <p className="text-[11px] text-gray-400">NOI (Cash)</p>
+              {mom && <DeltaBadge change={mom.noiCash.change} label="MoM" />}
+              {yoy && <DeltaBadge change={yoy.noiCash.change} label="YoY" />}
             </div>
             <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <BarChart3 className="h-4 w-4 text-orange-500 mb-1" />
               <p className="text-lg font-bold text-gray-900">{formatPercent(summary.portfolio.oer)}</p>
               <p className="text-[11px] text-gray-400">OER</p>
+              {mom && <DeltaBadge change={mom.totalExpenses.change} label="MoM expenses" invert />}
+              {yoy && <DeltaBadge change={yoy.totalExpenses.change} label="YoY expenses" invert />}
             </div>
             <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <DollarSign className={`h-4 w-4 mb-1 ${summary.portfolio.netIncome >= 0 ? 'text-emerald-500' : 'text-red-500'}`} />
               <p className="text-lg font-bold text-gray-900">{formatCurrency(summary.portfolio.netIncome)}</p>
               <p className="text-[11px] text-gray-400">Net income (GAAP)</p>
+              {mom && <DeltaBadge change={mom.netIncome.change} label="MoM" />}
+              {yoy && <DeltaBadge change={yoy.netIncome.change} label="YoY" />}
             </div>
           </div>
+
+          {/* Comparison legend */}
+          {(mom || yoy) && (
+            <div className="flex gap-4 mb-4 text-[11px] text-gray-400">
+              {mom && <span>MoM = month-over-month</span>}
+              {yoy && <span>YoY = year-over-year</span>}
+            </div>
+          )}
+
+          {/* Trailing trend chart */}
+          {trendData.length >= 2 && (
+            <div className="mb-6">
+              <TrendChart data={trendData} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
             {/* Expense breakdown */}

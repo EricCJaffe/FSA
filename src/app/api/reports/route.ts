@@ -47,23 +47,80 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Fetch financial data
-    const { data: financials } = await supabase
-      .from('financial_line_items')
-      .select('*')
-      .eq('org_id', role.org_id)
+    // Date range for the report month
+    const periodStart = `${year}-${String(month).padStart(2, '0')}-01`
+    const lastDay = new Date(year, month, 0).getDate()
+    const periodEnd = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
-    const { data: properties } = await supabase
-      .from('properties')
-      .select('*')
-      .eq('org_id', role.org_id)
-      .eq('active', true)
+    // Prior month
+    const priorDate = new Date(year, month - 2, 1) // month-1 in 0-indexed, minus 1 more
+    const priorStart = `${priorDate.getFullYear()}-${String(priorDate.getMonth() + 1).padStart(2, '0')}-01`
+    const priorLastDay = new Date(priorDate.getFullYear(), priorDate.getMonth() + 1, 0).getDate()
+    const priorEnd = `${priorDate.getFullYear()}-${String(priorDate.getMonth() + 1).padStart(2, '0')}-${String(priorLastDay).padStart(2, '0')}`
 
-    const items = (financials ?? []) as FinancialLineItem[]
-    const props = (properties ?? []) as Property[]
+    // Same month prior year
+    const yoyStart = `${year - 1}-${String(month).padStart(2, '0')}-01`
+    const yoyLastDay = new Date(year - 1, month, 0).getDate()
+    const yoyEnd = `${year - 1}-${String(month).padStart(2, '0')}-${String(yoyLastDay).padStart(2, '0')}`
 
-    // Compute metrics
-    const portfolioMetrics = computePortfolioMetrics(items.filter((i) => !propertyId || i.property_id === propertyId))
+    // Trailing 12 months for trend data
+    const trailingDate = new Date(year, month - 12, 1)
+    const trailingStart = `${trailingDate.getFullYear()}-${String(trailingDate.getMonth() + 1).padStart(2, '0')}-01`
+
+    // Fetch current period, prior month, YoY, trailing trend, and properties in parallel
+    const [currentRes, priorRes, yoyRes, trendRes, propertiesRes] = await Promise.all([
+      supabase
+        .from('financial_line_items')
+        .select('*')
+        .eq('org_id', role.org_id)
+        .gte('period_date', periodStart)
+        .lte('period_date', periodEnd)
+        .in('account_type', ['income', 'other_income', 'expense']),
+      supabase
+        .from('financial_line_items')
+        .select('*')
+        .eq('org_id', role.org_id)
+        .gte('period_date', priorStart)
+        .lte('period_date', priorEnd)
+        .in('account_type', ['income', 'other_income', 'expense']),
+      supabase
+        .from('financial_line_items')
+        .select('*')
+        .eq('org_id', role.org_id)
+        .gte('period_date', yoyStart)
+        .lte('period_date', yoyEnd)
+        .in('account_type', ['income', 'other_income', 'expense']),
+      supabase
+        .from('financial_line_items')
+        .select('account_type, amount, period_date')
+        .eq('org_id', role.org_id)
+        .gte('period_date', trailingStart)
+        .lte('period_date', periodEnd)
+        .in('account_type', ['income', 'other_income', 'expense'])
+        .order('period_date'),
+      supabase
+        .from('properties')
+        .select('*')
+        .eq('org_id', role.org_id)
+        .eq('active', true),
+    ])
+
+    const items = (currentRes.data ?? []) as FinancialLineItem[]
+    const priorItems = (priorRes.data ?? []) as FinancialLineItem[]
+    const yoyItems = (yoyRes.data ?? []) as FinancialLineItem[]
+    const props = (propertiesRes.data ?? []) as Property[]
+
+    // Compute metrics for current, prior, and YoY periods
+    const portfolioMetrics = computePortfolioMetrics(
+      items.filter((i) => !propertyId || i.property_id === propertyId)
+    )
+    const priorMetrics = priorItems.length > 0
+      ? computePortfolioMetrics(priorItems.filter((i) => !propertyId || i.property_id === propertyId))
+      : null
+    const yoyMetrics = yoyItems.length > 0
+      ? computePortfolioMetrics(yoyItems.filter((i) => !propertyId || i.property_id === propertyId))
+      : null
+
     const allPropertyMetrics = computeAllPropertyMetrics(
       items,
       props.map((p) => ({
@@ -77,6 +134,48 @@ export async function POST(request: NextRequest) {
       }))
     )
 
+    // Build trailing trend data grouped by month
+    const monthMap = new Map<string, { income: number; expenses: number }>()
+    for (const item of trendRes.data ?? []) {
+      const d = new Date(item.period_date + 'T00:00:00')
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const entry = monthMap.get(key) ?? { income: 0, expenses: 0 }
+      const amount = Number(item.amount)
+      if (item.account_type === 'income' || item.account_type === 'other_income') {
+        entry.income += amount
+      } else if (item.account_type === 'expense') {
+        entry.expenses += amount
+      }
+      monthMap.set(key, entry)
+    }
+
+    const trend = Array.from(monthMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, vals]) => {
+        const [y, m] = key.split('-').map(Number)
+        const label = new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+        return {
+          month: label,
+          income: Math.round(vals.income),
+          expenses: Math.round(vals.expenses),
+          noi: Math.round(vals.income - vals.expenses),
+        }
+      })
+
+    // Helper for period comparison
+    function buildComparison(current: typeof portfolioMetrics, prior: typeof portfolioMetrics | null) {
+      if (!prior) return null
+      const pct = (cur: number, prev: number) =>
+        prev === 0 ? null : Math.round(((cur - prev) / Math.abs(prev)) * 1000) / 10
+      return {
+        grossIncome: { value: prior.grossIncome, change: pct(current.grossIncome, prior.grossIncome) },
+        noiCash: { value: prior.noiCash, change: pct(current.noiCash, prior.noiCash) },
+        totalExpenses: { value: prior.totalExpensesExDepreciation, change: pct(current.totalExpensesExDepreciation, prior.totalExpensesExDepreciation) },
+        netIncome: { value: prior.netIncome, change: pct(current.netIncome, prior.netIncome) },
+        oer: prior.operatingExpenseRatio,
+      }
+    }
+
     // Build summary JSON
     const summaryJson = {
       period: { year, month },
@@ -89,6 +188,11 @@ export async function POST(request: NextRequest) {
         netIncome: portfolioMetrics.netIncome,
         expenseBreakdown: portfolioMetrics.expenseBreakdown,
       },
+      comparisons: {
+        mom: buildComparison(portfolioMetrics, priorMetrics),
+        yoy: buildComparison(portfolioMetrics, yoyMetrics),
+      },
+      trend,
       properties: allPropertyMetrics.map((m) => ({
         id: m.propertyId,
         name: m.propertyName,
