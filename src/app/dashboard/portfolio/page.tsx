@@ -21,6 +21,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import PeriodPicker from '@/components/dashboard/PeriodPicker'
+import TrendChart from '@/components/dashboard/TrendChart'
 
 function MetricCard({
   label,
@@ -173,6 +174,48 @@ export default async function PortfolioPage({
   const hasPrior = priorMetrics !== null
   const deltaLabel = 'vs prior period'
 
+  // Fetch all P&L data for trend chart (last 12 months from end date)
+  const trendStart = new Date(periodEnd + 'T00:00:00')
+  trendStart.setMonth(trendStart.getMonth() - 11)
+  trendStart.setDate(1)
+  const trendStartStr = trendStart.toISOString().split('T')[0]
+
+  const { data: trendData } = await supabase
+    .from('financial_line_items')
+    .select('account_type, amount, period_date')
+    .eq('org_id', orgId)
+    .gte('period_date', trendStartStr)
+    .lte('period_date', periodEnd)
+    .in('account_type', ['income', 'other_income', 'expense'])
+
+  // Group by month for trend chart
+  const monthMap = new Map<string, { income: number; expenses: number }>()
+  for (const item of trendData ?? []) {
+    const d = new Date(item.period_date + 'T00:00:00')
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const entry = monthMap.get(key) ?? { income: 0, expenses: 0 }
+    const amount = Number(item.amount)
+    if (item.account_type === 'income' || item.account_type === 'other_income') {
+      entry.income += amount
+    } else if (item.account_type === 'expense') {
+      entry.expenses += amount
+    }
+    monthMap.set(key, entry)
+  }
+
+  const trendChartData = Array.from(monthMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, vals]) => {
+      const [y, m] = key.split('-').map(Number)
+      const label = new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+      return {
+        month: label,
+        income: Math.round(vals.income),
+        expenses: Math.round(vals.expenses),
+        noi: Math.round(vals.income - vals.expenses),
+      }
+    })
+
   const ltrCount = properties.filter((p) => p.property_type === 'ltr').length
   const strCount = properties.filter((p) => p.property_type === 'str').length
 
@@ -269,6 +312,11 @@ export default async function PortfolioPage({
           icon={CreditCard}
           color={hasBsData && bs.totalLiabilities < 10000 ? 'text-emerald-600 bg-emerald-50' : 'text-orange-600 bg-orange-50'}
         />
+      </div>
+
+      {/* Trend chart */}
+      <div className="mb-6">
+        <TrendChart data={trendChartData} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

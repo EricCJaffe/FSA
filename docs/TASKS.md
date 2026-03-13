@@ -59,7 +59,7 @@ _Last updated: 2026-03-13_
 - [x] Period comparison — MoM/YoY delta indicators on portfolio metric cards (▲/▼ with %)
 - [x] Batch sync last 12 months button on settings page
 - [x] Populate missing property addresses button on properties page
-- [ ] Month-over-month and YoY trend charts (Recharts)
+- [x] Month-over-month and YoY trend charts (Recharts)
 - [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
 
 ### AI Insights Engine (FSA)
@@ -75,7 +75,7 @@ _Last updated: 2026-03-13_
 - [x] Monthly report generation workflow (with AI narrative)
 - [x] Report viewer UI (metrics, expense breakdown, per-property, AI analysis)
 - [x] Publish/unpublish toggle on report detail page
-- [ ] Commentary/annotation system
+- [x] Commentary/annotation system
 - [ ] SendGrid notification on report publish
 
 ---
@@ -168,3 +168,5 @@ _Last updated: 2026-03-13_
 - [x] 2026-03-13 — Batch sync (last 12 months) button on settings sync card
 - [x] 2026-03-13 — Property address populate button + API (fills missing addresses with defaults)
 - [x] 2026-03-13 — MoM/YoY delta indicators on portfolio metric cards (▲/▼ % vs prior period)
+- [x] 2026-03-13 — Trend charts on portfolio page (Recharts — area/line toggle, metric filter)
+- [x] 2026-03-13 — Report commentary/annotations (add notes to reports before sharing)

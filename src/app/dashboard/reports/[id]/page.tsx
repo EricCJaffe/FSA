@@ -11,9 +11,11 @@ import {
   Brain,
 } from 'lucide-react'
 import PublishButton from '@/components/reports/PublishButton'
+import ReportCommentary from '@/components/reports/ReportCommentary'
 
 interface ReportSummary {
   period: { year: number; month: number }
+  commentary?: string | null
   portfolio: {
     grossIncome: number
     totalExpenses: number
@@ -204,6 +206,9 @@ export default async function ReportDetailPage({
           ))}
         </div>
       )}
+
+      {/* Commentary */}
+      <ReportCommentary reportId={report.id} initialCommentary={summary?.commentary ?? null} />
 
       {!insights?.length && !summary && (
         <div className="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
