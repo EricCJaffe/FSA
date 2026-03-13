@@ -74,7 +74,7 @@ export async function syncProfitAndLoss(
   const report = await qboGet<QboReport>(orgId, '/reports/ProfitAndLoss', {
     start_date: startDate,
     end_date: endDate,
-    summarize_column_by: 'Class',
+    columns: 'Class',
     accounting_method: 'Cash',
   })
 
