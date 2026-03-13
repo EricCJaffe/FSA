@@ -159,6 +159,14 @@ export async function syncBalanceSheet(
 
   const lines = parseBalanceSheet(report)
 
+  // Delete existing balance sheet data for this date to avoid duplicates
+  await supabase
+    .from('financial_line_items')
+    .delete()
+    .eq('org_id', orgId)
+    .eq('period_date', asOfDate)
+    .in('account_type', ['asset', 'liability', 'equity'])
+
   const rows = lines.map((line) => ({
     org_id: orgId,
     property_id: null, // Balance sheet is always portfolio-level

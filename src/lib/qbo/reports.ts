@@ -36,15 +36,25 @@ function getClassColumns(report: QboReport): (string | null)[] {
  */
 function resolveAccountType(
   sectionGroup: string
-): 'income' | 'expense' | 'other_income' | 'asset' | 'liability' | 'equity' {
+): 'income' | 'expense' | 'other_income' | 'asset' | 'liability' | 'equity' | null {
   const g = sectionGroup.toLowerCase()
   if (g.includes('income') && !g.includes('other') && !g.includes('expense')) return 'income'
   if (g.includes('other income') || g.includes('otherincome')) return 'other_income'
   if (g.includes('expense') || g.includes('cost of goods')) return 'expense'
-  if (g.includes('asset')) return 'asset'
-  if (g.includes('liability') || g.includes('liabilities')) return 'liability'
-  if (g.includes('equity')) return 'equity'
-  return 'expense' // fallback
+  // Balance sheet: match both top-level sections and QBO sub-sections
+  if (g.includes('asset') || g.includes('bank account') || g.includes('accounts receivable')
+    || g.includes('other current asset') || g.includes('fixed asset') || g.includes('other asset')) return 'asset'
+  if (g.includes('liability') || g.includes('liabilities') || g.includes('accounts payable')
+    || g.includes('credit card')) return 'liability'
+  if (g.includes('equity') || g.includes('stockholder') || g.includes('owner')) return 'equity'
+  return null // unknown — caller should fall back to parent group
+}
+
+/** resolveAccountType with a fallback for P&L contexts where null isn't expected */
+function resolveAccountTypeStrict(
+  sectionGroup: string
+): 'income' | 'expense' | 'other_income' | 'asset' | 'liability' | 'equity' {
+  return resolveAccountType(sectionGroup) ?? 'expense'
 }
 
 /**
@@ -64,7 +74,7 @@ function walkRows(
       const accountName = row.ColData[0]?.value
       if (!accountName) continue
 
-      const accountType = resolveAccountType(group)
+      const accountType = resolveAccountTypeStrict(group)
 
       // Each subsequent column corresponds to a class (or total)
       for (let i = 1; i < row.ColData.length; i++) {
@@ -126,7 +136,7 @@ export function parseProfitAndLoss(report: QboReport): ParsedFinancialLine[] {
 
         results.push({
           accountName,
-          accountType: resolveAccountType(group),
+          accountType: resolveAccountTypeStrict(group),
           amount: Math.abs(amount),
           className: null,
         })
@@ -147,13 +157,23 @@ export function parseProfitAndLoss(report: QboReport): ParsedFinancialLine[] {
 
 /**
  * Parse a QBO Balance Sheet report into line items.
+ *
+ * QBO nests sub-sections (e.g. "Bank Accounts" under "Assets").
+ * If a child group doesn't resolve to a known balance sheet type,
+ * we keep using the parent group so items are classified correctly.
  */
 export function parseBalanceSheet(report: QboReport): ParsedFinancialLine[] {
   const results: ParsedFinancialLine[] = []
 
-  function walk(rows: QboReportRow[], currentGroup: string) {
+  function walk(rows: QboReportRow[], parentType: 'asset' | 'liability' | 'equity' | null) {
     for (const row of rows) {
-      const group = row.group || currentGroup
+      // If this row has its own group, try to resolve it
+      const resolved = row.group ? resolveAccountType(row.group) : null
+      // Use resolved type if it's a valid BS type, otherwise keep parent
+      const effectiveType: 'asset' | 'liability' | 'equity' | null =
+        resolved === 'asset' || resolved === 'liability' || resolved === 'equity'
+          ? resolved
+          : parentType
 
       if (row.ColData && row.ColData.length >= 2) {
         const accountName = row.ColData[0]?.value
@@ -163,22 +183,25 @@ export function parseBalanceSheet(report: QboReport): ParsedFinancialLine[] {
         const amount = parseFloat(rawValue.replace(/,/g, ''))
         if (isNaN(amount) || amount === 0) continue
 
+        // Skip summary/total rows (e.g. "Total Fixed Assets")
+        if (accountName.toLowerCase().startsWith('total ')) continue
+
         results.push({
           accountName,
-          accountType: resolveAccountType(group),
+          accountType: effectiveType ?? 'asset',
           amount,
           className: null,
         })
       }
 
       if (row.Rows?.Row) {
-        walk(row.Rows.Row, group)
+        walk(row.Rows.Row, effectiveType)
       }
     }
   }
 
   if (report.Rows?.Row) {
-    walk(report.Rows.Row, '')
+    walk(report.Rows.Row, null)
   }
 
   return results
