@@ -176,7 +176,7 @@ export default function QboSyncCard({ syncs, isAdmin }: Props) {
                       {sync.recordsSynced != null ? `${sync.recordsSynced} records` : ''}
                     </p>
                     {sync.completedAt && (
-                      <p className="text-[11px] text-gray-400">
+                      <p className="text-[11px] text-gray-400" suppressHydrationWarning>
                         {new Date(sync.completedAt).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',

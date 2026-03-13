@@ -1,8 +1,8 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Link2, Link2Off, ExternalLink, CheckCircle2, AlertCircle, Plus, Building2 } from 'lucide-react'
+import { Link2, Link2Off, ExternalLink, CheckCircle2, AlertCircle, Plus, Building2, Trash2, Loader2 } from 'lucide-react'
 
 interface QboConnection {
   id: string
@@ -45,8 +45,46 @@ function QboStatusMessages() {
   )
 }
 
+function formatDate(dateStr: string): string {
+  try {
+    const d = new Date(dateStr)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
+  } catch {
+    return dateStr
+  }
+}
+
 export default function QboConnectionCard({ connections, isAdmin }: Props) {
   const hasConnections = connections.length > 0
+  const [disconnecting, setDisconnecting] = useState<string | null>(null)
+
+  async function handleDisconnect(connectionId: string, companyName: string | null) {
+    const name = companyName || 'this company'
+    if (!confirm(`Disconnect ${name} from QuickBooks? This will remove the saved tokens. You can reconnect later.`)) {
+      return
+    }
+
+    setDisconnecting(connectionId)
+    try {
+      const res = await fetch('/api/qbo/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ connectionId }),
+      })
+
+      if (res.ok) {
+        window.location.reload()
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Failed to disconnect')
+      }
+    } catch {
+      alert('Network error')
+    } finally {
+      setDisconnecting(null)
+    }
+  }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -111,16 +149,26 @@ export default function QboConnectionCard({ connections, isAdmin }: Props) {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400">
-                    Connected {new Date(conn.connectedAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+                    {formatDate(conn.connectedAt)}
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     Active
                   </span>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDisconnect(conn.id, conn.companyName)}
+                      disabled={disconnecting === conn.id}
+                      className="rounded-md p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                      title="Disconnect"
+                    >
+                      {disconnecting === conn.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
