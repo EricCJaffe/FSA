@@ -1,0 +1,156 @@
+{
+  "$schema": "yarash-eretz-historical-pl/v1",
+  "as_of_date": "2026-04-20",
+  "source": "QuickBooks P&L by Class (one file per property), through 2025 year-end",
+  "methodology": "Per-property totals divided by years_rented to produce annualized line items. Use these as baselines for comparing to current QBO YTD data.",
+  "unit": "USD per year",
+
+  "fremont": {
+    "years_rented": 5.92,
+    "annual": {
+      "rental_income": 13659.11,
+      "depreciation": 2629.22,
+      "insurance": 982.72,
+      "lawncare": 561.99,
+      "management_fees": 1413.21,
+      "repairs_maintenance": 2490.58,
+      "taxes_licenses": 1685.70,
+      "utilities": 31.81,
+      "other": 13.85,
+      "total_expenses": 9809.09,
+      "gaap_net_income": 3850.02,
+      "true_cash_flow": 6977.00
+    },
+    "pl_total_6yr": {
+      "rental_income": 80861.94,
+      "gaap_net_income": 22802
+    }
+  },
+
+  "sunderland": {
+    "years_rented": 5.58,
+    "annual": {
+      "rental_income": 14360.98,
+      "depreciation": 3422.76,
+      "insurance": 939.26,
+      "lawncare": 87.97,
+      "management_fees": 1484.09,
+      "repairs_maintenance": 1929.02,
+      "taxes_licenses": 2268.96,
+      "utilities": 66.75,
+      "other": 1.84,
+      "total_expenses": 10200.65,
+      "gaap_net_income": 4160.33,
+      "true_cash_flow": 7969.00
+    },
+    "pl_total_6yr": {
+      "rental_income": 80134.25,
+      "gaap_net_income": 23212
+    }
+  },
+
+  "solar_b": {
+    "years_rented": 6.25,
+    "annual": {
+      "rental_income": 11298.11,
+      "depreciation": 2840.13,
+      "insurance": 706.15,
+      "lawncare": 0,
+      "management_fees": 1194.50,
+      "repairs_maintenance": 1204.88,
+      "taxes_licenses": 1272.88,
+      "utilities": 94.49,
+      "other": 0,
+      "total_expenses": 7313.04,
+      "gaap_net_income": 3985.07,
+      "true_cash_flow": 7066.00
+    },
+    "pl_total_6yr": {
+      "rental_income": 70613.17,
+      "gaap_net_income": 24907
+    }
+  },
+
+  "solar_c": {
+    "years_rented": 5.67,
+    "annual": {
+      "rental_income": 13788.21,
+      "depreciation": 3312.36,
+      "insurance": 297.08,
+      "lawncare": 0,
+      "management_fees": 1231.46,
+      "repairs_maintenance": 1569.26,
+      "taxes_licenses": 1520.61,
+      "utilities": 48.91,
+      "other": 0,
+      "total_expenses": 7979.68,
+      "gaap_net_income": 5808.53,
+      "true_cash_flow": 9435.00
+    },
+    "pl_total_6yr": {
+      "rental_income": 78181.15,
+      "gaap_net_income": 32937
+    }
+  },
+
+  "scenic_str_current": {
+    "use": "STR (short-term rental)",
+    "years_rented": 3.75,
+    "annual": {
+      "rental_income": 28175.46,
+      "cleaning": 125.81,
+      "depreciation": 19876.26,
+      "housewares_linens": 631.56,
+      "insurance": 6218.95,
+      "interest_paid_historical": 7419.15,
+      "interest_paid_going_forward": 0,
+      "job_supplies": 261.07,
+      "lawncare": 519.91,
+      "management_fees": 1957.60,
+      "repairs_maintenance": 8220.16,
+      "taxes_licenses": 8181.77,
+      "utilities": 5444.87,
+      "other": 0,
+      "total_expenses": 58856.11,
+      "gaap_net_income": -30681.64,
+      "true_cash_flow": -1742.00,
+      "notes": "Includes personal use 4 weeks/year (value ~$10K/yr). Mortgage paid off so interest_paid is historical only."
+    },
+    "pl_total_6yr": {
+      "rental_income": 105657.97,
+      "gaap_net_income": -115056
+    }
+  },
+
+  "scenic_ltr_projected": {
+    "use": "LTR (long-term rental) — PROJECTED if converted",
+    "assumptions": "Based on Shoreward estimate of $3,000/mo rent; expense adjustments per industry norms for STR→LTR transition",
+    "annual": {
+      "rental_income": 36000,
+      "cleaning": 0,
+      "depreciation": 19876.26,
+      "housewares_linens": 0,
+      "insurance": 4353.27,
+      "interest_paid": 0,
+      "job_supplies": 78,
+      "lawncare": 0,
+      "management_fees": 3600,
+      "repairs_maintenance": 4932.10,
+      "taxes_licenses": 6954.50,
+      "utilities": 0,
+      "other": 0,
+      "total_expenses": 39794.13,
+      "gaap_net_income": -3794.13,
+      "true_cash_flow": 17068.00,
+      "improvement_vs_str": 18810.00
+    }
+  },
+
+  "portfolio_totals_current": {
+    "annual_rental_income": 81281.87,
+    "annual_expenses": 94158.57,
+    "annual_gaap_net_income": -12876.69,
+    "annual_true_cash_flow": 29706.00,
+    "notes": "GAAP shows loss due to $145K cumulative depreciation and Scenic's expense base. True cash flow is solidly positive."
+  }
+}

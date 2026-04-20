@@ -118,3 +118,24 @@ Before ending a session with meaningful changes:
 1. Ensure `docs/TASKS.md` reflects completed and newly discovered work
 2. Commit all changes with clear messages (include doc updates in same commit)
 3. Push to the working branch
+
+## Yarash Eretz Portfolio Analysis Skill
+
+A strategic analysis framework lives in `.claude/skills/yarash-eretz-analysis/`. Load it when answering questions about:
+
+- Portfolio performance, cash flow, or strategy
+- Specific properties (Fremont, Sunderland, Solar B, Solar C, Scenic Drive)
+- The Scenic Drive decision (STR vs LTR vs sell)
+- Scenario modeling (beach condo, mountain STR, new LTR acquisitions)
+- Reconciling QBO actuals against strategic projections
+- S&P 500 stacking strategy alongside rental income
+
+**Priority matrix:** God First > Health > Family > Impact. Highest-dollar answer is not automatically the recommended answer.
+
+**Key facts (as of April 2026):**
+- 5 properties, all paid off, ~$1.09M value, ~$29.7K/yr current cash flow
+- 4 LTRs (Fremont/Sunderland/Solar B/Solar C): solid, $31K/yr combined cash flow
+- Scenic Drive (STR): losing ~$1.7K/yr; converts to +$17K/yr as LTR at $3K/mo
+- **Active recommendation: Scenario 6** — LTR Convert + S&P Stack, reversible, 24-month checkpoint (due April 2028)
+
+**Rule:** Live QBO data wins for current-state questions. Skill data informs strategy and forecasts.
