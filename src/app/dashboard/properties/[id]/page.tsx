@@ -25,6 +25,7 @@ import {
   Brain,
 } from 'lucide-react'
 import AiPropertyLookup from '@/components/property/AiPropertyLookup'
+import ProjectionCard from '@/components/property/ProjectionCard'
 
 function fmt(value: number | null, style: 'currency' | 'percent' | 'decimal' = 'currency') {
   if (value == null) return '—'
@@ -305,6 +306,29 @@ export default async function PropertyDetailPage({
           </div>
         </div>
       )}
+
+      {/* Value Projections */}
+      {property.current_market_value != null && (() => {
+        const appreciationRate = property.qbo_class_name?.includes('Scenic') ? 0.03 : 0.025
+        const rentGrowthRate = 0.025
+        const currentMonthlyRent = metrics ? metrics.grossIncome / 12 : 0
+        return (
+          <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                Value Projections
+              </h2>
+            </div>
+            <ProjectionCard
+              currentValue={Number(property.current_market_value)}
+              currentMonthlyRent={currentMonthlyRent}
+              appreciationRate={appreciationRate}
+              rentGrowthRate={rentGrowthRate}
+            />
+          </div>
+        )
+      })()}
 
       {/* AI Property Lookup */}
       <AiPropertyLookup
