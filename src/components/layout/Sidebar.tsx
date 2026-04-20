@@ -3,14 +3,21 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LayoutDashboard, Building2, PieChart, FileBarChart, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Building2, PieChart, FileBarChart, Settings, LogOut, TrendingUp, GitBranch, Waves, Calculator } from 'lucide-react'
 
 const nav = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Properties', href: '/dashboard/properties', icon: Building2 },
-  { label: 'Portfolio', href: '/dashboard/portfolio', icon: PieChart },
+  { label: 'Portfolio', href: '/dashboard/portfolio', icon: PieChart, exact: true },
   { label: 'Reports', href: '/dashboard/reports', icon: FileBarChart },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+]
+
+const portfolioTools = [
+  { label: 'Net Worth', href: '/dashboard/portfolio/net-worth', icon: TrendingUp },
+  { label: 'Scenarios', href: '/dashboard/portfolio/scenarios', icon: GitBranch },
+  { label: 'Scenic Drive', href: '/dashboard/portfolio/scenic-decision', icon: Waves },
+  { label: 'Deal Analyzer', href: '/dashboard/portfolio/deal-analyzer', icon: Calculator },
 ]
 
 export default function Sidebar({ userEmail }: { userEmail: string }) {
@@ -45,11 +52,37 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {nav.map((item) => {
-          const active = item.href === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname.startsWith(item.href)
+          const active = item.exact
+            ? pathname === item.href
+            : item.href === '/dashboard'
+              ? pathname === '/dashboard'
+              : pathname.startsWith(item.href) && !portfolioTools.some(t => pathname.startsWith(t.href))
+          const Icon = item.icon
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                active
+                  ? 'bg-blue-50 text-blue-700 font-medium'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              <Icon className={`h-4 w-4 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
+              {item.label}
+            </Link>
+          )
+        })}
+
+        <div className="pt-3 pb-1">
+          <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+            Portfolio Tools
+          </p>
+        </div>
+        {portfolioTools.map((item) => {
+          const active = pathname.startsWith(item.href)
           const Icon = item.icon
           return (
             <Link
