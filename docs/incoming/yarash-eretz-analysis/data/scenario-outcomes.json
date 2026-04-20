@@ -1,0 +1,193 @@
+{
+  "$schema": "yarash-eretz-scenario-outcomes/v1",
+  "as_of_date": "2026-04-20",
+  "model_version": "v5",
+  "starting_net_worth": 1089000,
+  "base_case_assumptions_reference": "See data/model-parameters.json",
+
+  "scenarios": {
+    "1_status_quo": {
+      "label": "Status Quo",
+      "description": "Keep all 5 properties; Scenic continues as STR",
+      "actions_required": "None",
+      "reversible": true,
+      "year_5_outcomes": {
+        "annual_cash_flow": 17368,
+        "cumulative_cash_flow": 100433,
+        "4_ltrs_value": 666399,
+        "scenic_value": 579637,
+        "other_property_value": 0,
+        "sp500_position": 0,
+        "total_net_worth": 1346469,
+        "annual_return_y5": 0.039
+      },
+      "year_10_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1136634,
+        "scenic_value_plus_cum_cf": 615628,
+        "sp500_position": 0,
+        "total_net_worth": 1752262,
+        "multiple_vs_today": 1.609
+      },
+      "year_20_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1832661,
+        "scenic_value_plus_cum_cf": 846573,
+        "sp500_position": 0,
+        "total_net_worth": 2679234,
+        "multiple_vs_today": 2.460
+      },
+      "mission_weighted_score": 3.30,
+      "mission_rank": 4
+    },
+
+    "2_ltr_convert": {
+      "label": "LTR Convert",
+      "description": "Keep all 5; convert Scenic from STR to LTR at $3K/mo",
+      "actions_required": "Stop STR bookings; list Scenic as LTR via Shoreward; screen tenant; sign 12-month lease",
+      "reversible": true,
+      "year_5_outcomes": {
+        "annual_cash_flow": 46217,
+        "cumulative_cash_flow": 267256,
+        "4_ltrs_value": 666399,
+        "scenic_value": 579637,
+        "other_property_value": 0,
+        "sp500_position": 0,
+        "total_net_worth": 1513293,
+        "annual_return_y5": 0.055
+      },
+      "year_10_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1136634,
+        "scenic_value_plus_cum_cf": 883422,
+        "sp500_position": 0,
+        "total_net_worth": 2020056,
+        "multiple_vs_today": 1.855
+      },
+      "year_20_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1832661,
+        "scenic_value_plus_cum_cf": 1382161,
+        "sp500_position": 0,
+        "total_net_worth": 3214821,
+        "multiple_vs_today": 2.952
+      },
+      "mission_weighted_score": 4.15,
+      "mission_rank": 3
+    },
+
+    "3_sell_and_sp500": {
+      "label": "Sell Scenic + S&P 500",
+      "description": "Sell Scenic (~$441K net); deploy proceeds to S&P 500",
+      "actions_required": "List Scenic for sale; complete sale; pay capital gains + depreciation recapture; open brokerage; deploy lump sum",
+      "reversible": false,
+      "year_5_outcomes": {
+        "annual_cash_flow": 30779,
+        "cumulative_cash_flow": 177987,
+        "4_ltrs_value": 666399,
+        "scenic_value": 0,
+        "other_property_value": 0,
+        "sp500_position": 662911,
+        "total_net_worth": 1507297,
+        "annual_return_y5": 0.070
+      },
+      "year_10_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1136634,
+        "scenic_value_plus_cum_cf": 0,
+        "sp500_position": 996791,
+        "total_net_worth": 2133425,
+        "multiple_vs_today": 1.959
+      },
+      "year_20_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1832661,
+        "scenic_value_plus_cum_cf": 0,
+        "sp500_position": 2253727,
+        "total_net_worth": 4086388,
+        "multiple_vs_today": 3.752
+      },
+      "mission_weighted_score": 4.35,
+      "mission_rank": 1,
+      "note": "Wins on pure mission-weighted math and 20-year compounding, but irreversible loss of waterfront asset and family vacation venue"
+    },
+
+    "4_sell_and_beach": {
+      "label": "Sell Scenic + Buy Beach House/Condo",
+      "description": "Sell Scenic (~$441K net); buy $700K Jax Beach property with $300K down",
+      "actions_required": "Sell Scenic; find beach property; secure investor mortgage; close; furnish; manage new asset",
+      "reversible": false,
+      "year_5_outcomes": {
+        "annual_cash_flow": -42316,
+        "cumulative_cash_flow": -230938,
+        "4_ltrs_value": 666399,
+        "scenic_value": 0,
+        "other_property_value": 735707,
+        "sp500_position": 151668,
+        "total_net_worth": 1322836,
+        "annual_return_y5": -0.005
+      },
+      "mission_weighted_score": 2.90,
+      "mission_rank": 5,
+      "note": "Negative cash flow driven by mortgage + HOA + coastal insurance. Only viable as pure lifestyle asset."
+    },
+
+    "5_sell_and_mountain_str": {
+      "label": "Sell Scenic + Buy Mountain STR",
+      "description": "Sell Scenic (~$441K net); buy $600K Smokies cabin with $250K down",
+      "actions_required": "Sell Scenic; acquire mountain property; secure STR financing; furnish; establish STR operations (or manager)",
+      "reversible": false,
+      "year_5_outcomes": {
+        "annual_cash_flow": 19252,
+        "cumulative_cash_flow": 112087,
+        "4_ltrs_value": 666399,
+        "scenic_value": 0,
+        "other_property_value": 695564,
+        "sp500_position": 166704,
+        "total_net_worth": 1640755,
+        "annual_return_y5": 0.044
+      },
+      "mission_weighted_score": 2.55,
+      "mission_rank": 6,
+      "note": "Trades one STR problem for another; active management; recession-vulnerable"
+    },
+
+    "6_ltr_convert_plus_sp500_stack": {
+      "label": "LTR Convert + S&P Stack (HYBRID — RECOMMENDED)",
+      "description": "Convert Scenic to LTR + auto-invest annual excess cash flow into S&P 500",
+      "actions_required": "Execute Scenario 2 (LTR convert); open brokerage; set up monthly auto-investment of ~$3,800/mo (~$46K/yr)",
+      "reversible": true,
+      "year_5_outcomes": {
+        "annual_cash_flow": 46217,
+        "cumulative_cash_flow": 267256,
+        "4_ltrs_value": 666399,
+        "scenic_value": 579637,
+        "other_property_value": 0,
+        "sp500_position": 261314,
+        "total_net_worth": 1774606,
+        "annual_return_y5": 0.087
+      },
+      "year_10_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1136634,
+        "scenic_value_plus_cum_cf": 883422,
+        "sp500_position": 212586,
+        "total_net_worth": 2232642,
+        "multiple_vs_today": 2.050
+      },
+      "year_20_outcomes": {
+        "4_ltrs_value_plus_cum_cf": 1832661,
+        "scenic_value_plus_cum_cf": 1382161,
+        "sp500_position": 693241,
+        "total_net_worth": 3908062,
+        "multiple_vs_today": 3.589
+      },
+      "mission_weighted_score": 4.30,
+      "mission_rank": 2,
+      "recommended": true,
+      "recommendation_rationale": "Highest 5-year net worth. Keeps all optionality (can pivot to Scenario 3 at 24-month checkpoint). Begins structural diversification. AI/recession resilient. Scenario 3 marginally wins mission score and 20-year compounding, but irreversible — Scenario 6 preserves the choice."
+    }
+  },
+
+  "ai_stress_test_ranking": [
+    {"rank": 1, "scenario": "2_ltr_convert", "note": "Scenic LTR income insulated from travel cycle; 4 LTRs thrive as displaced workers rent"},
+    {"rank": 2, "scenario": "1_status_quo", "note": "Strong LTRs offset Scenic STR weakness; no new debt"},
+    {"rank": 3, "scenario": "6_ltr_convert_plus_sp500_stack", "note": "Great foundation; S&P drawdown short-term but dollar-cost-averages in"},
+    {"rank": 4, "scenario": "3_sell_and_sp500", "note": "LTRs fine; $100K+ paper loss on S&P position during drawdown"},
+    {"rank": 5, "scenario": "5_sell_and_mountain_str", "note": "STR revenue hit hard + S&P drawdown"},
+    {"rank": 6, "scenario": "4_sell_and_beach", "note": "Worst. Negative CF + condo value drop + S&P drawdown"}
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "$schema": "yarash-eretz-model-parameters/v1",
+  "as_of_date": "2026-04-20",
+  "note": "These are the assumptions used by the v5 analysis. If live QBO data or market conditions materially diverge, update these and re-run scenarios.",
+
+  "market_appreciation_forecast_5yr_annual": {
+    "jacksonville_sfh": {
+      "bear": -0.01,
+      "base": 0.025,
+      "bull": 0.05,
+      "source": "NAR/NEFAR consensus; Jacksonville #4 homebuyer market 2026; Zillow Home Value Forecast"
+    },
+    "middleburg_waterfront": {
+      "bear": 0.00,
+      "base": 0.03,
+      "bull": 0.06,
+      "source": "Black Creek waterfront comps: 3974 Scenic Dr $625K 2021 → $751K Redfin est (20% in 4.5yrs)"
+    },
+    "jacksonville_beach_condo": {
+      "bear": -0.04,
+      "base": 0.01,
+      "bull": 0.04,
+      "source": "Condo segment -4.5% YoY; SB 4-D reserve pressure; HOA/insurance risk"
+    },
+    "smoky_mountain_str": {
+      "bear": 0.00,
+      "base": 0.03,
+      "bull": 0.05,
+      "source": "Awning/AirDNA; supply growth cooled to 1% in 2025; TN STR-friendly (no state bans)"
+    },
+    "ponte_vedra_beach_sfh": {
+      "bear": 0.00,
+      "base": 0.035,
+      "bull": 0.06,
+      "source": "Lifestyle premium offsetting insurance headwinds"
+    }
+  },
+
+  "rent_growth_annual": {
+    "jax_ltr": 0.025,
+    "middleburg_ltr": 0.025,
+    "smoky_mountain_str_revenue": 0.03
+  },
+
+  "expense_inflation_annual": {
+    "general": 0.03,
+    "insurance_fl_specific": 0.08,
+    "repairs_age_adjusted": 0.04,
+    "notes": "FL insurance inflation assumption is critical — premiums up 40-80% since 2022, with ongoing pressure"
+  },
+
+  "scenic_ltr_conversion_parameters": {
+    "monthly_rent": 3000,
+    "ltr_management_fee_pct": 0.10,
+    "insurance_reduction_pct": 0.30,
+    "repairs_reduction_pct": 0.40,
+    "taxes_reduction_pct": 0.15,
+    "utilities_paid_by_tenant": true,
+    "lawncare_paid_by_tenant": true,
+    "cleaning_eliminated": true,
+    "housewares_eliminated": true
+  },
+
+  "scenic_sale_economics": {
+    "selling_costs_pct": 0.06,
+    "lt_cap_gains_rate_federal": 0.15,
+    "fl_state_income_tax": 0,
+    "depreciation_recapture_rate": 0.25,
+    "depreciation_taken_to_date": 74535.96,
+    "net_proceeds_if_sold_at_500k": 440866,
+    "calculation_note": "500000 * (1 - 0.06) - (500000 - 430000) * 0.15 - 74535.96 * 0.25"
+  },
+
+  "beach_house_scenario_parameters": {
+    "purchase_price": 700000,
+    "closing_furniture": 40000,
+    "cash_down_from_scenic_sale": 300000,
+    "interest_rate_30yr_investor": 0.0625,
+    "property_tax_rate_duval": 0.011,
+    "annual_insurance_coastal": 8500,
+    "annual_hoa_if_condo": 9600,
+    "annual_maintenance": 5000,
+    "personal_vacation_weeks_per_year": 6,
+    "vacation_value_per_week": 3000
+  },
+
+  "mountain_str_scenario_parameters": {
+    "purchase_price": 600000,
+    "closing_furnishings": 80000,
+    "cash_down": 250000,
+    "interest_rate_30yr_investor_str": 0.0725,
+    "annual_gross_revenue": 55000,
+    "management_fee_pct": 0.25,
+    "annual_property_tax": 3500,
+    "annual_insurance": 3200,
+    "annual_utilities_internet": 4800,
+    "annual_repairs_supplies": 5000,
+    "market": "Smoky Mountains (Gatlinburg/Pigeon Forge/Sevierville)",
+    "source_for_revenue": "Awning: 2BR $50-65K, 4BR $80-120K; midpoint used"
+  },
+
+  "benchmark_returns_5yr_annual": {
+    "sp500_base": 0.085,
+    "sp500_bull": 0.12,
+    "sp500_bear": 0.03,
+    "hysa_treasuries": 0.04,
+    "60_40_portfolio": 0.07,
+    "private_reits": 0.075,
+    "sp500_long_run": 0.085,
+    "note": "Goldman Sachs 2026 target: 12% total return. Wall St median: 9-10%. Long-run 10.5% nominal / 6.5% real."
+  },
+
+  "vacation_value_assumptions": {
+    "scenic_personal_use_weeks_per_year": 4,
+    "vacation_rental_cost_equivalent_per_week": 2500,
+    "annual_scenic_vacation_value": 10000,
+    "alternative_strategy_annual_budget": 7500,
+    "alternative_strategy_weeks": 3,
+    "note": "Alternative = rent 3 weeks of vacation rentals at varied locations"
+  },
+
+  "long_run_assumptions_10_20yr": {
+    "jax_ltr_appreciation": 0.035,
+    "jax_ltr_net_cf_growth": 0.015,
+    "scenic_appreciation": 0.04,
+    "sp500_long_run": 0.085,
+    "general_inflation": 0.025
+  },
+
+  "priority_matrix": {
+    "order": ["God First", "Health", "Family", "Impact"],
+    "weights_for_scenario_scoring": {
+      "god_first_alignment": 0.25,
+      "health_stress": 0.15,
+      "family_vacation_value": 0.10,
+      "cash_flow_now": 0.15,
+      "long_term_wealth": 0.15,
+      "ai_recession_resilience": 0.10,
+      "diversification": 0.05,
+      "liquidity": 0.05
+    }
+  }
+}
