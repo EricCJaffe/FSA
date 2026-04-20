@@ -97,7 +97,8 @@
     "use": "STR (short-term rental)",
     "years_rented": 3.75,
     "annual": {
-      "rental_income": 28175.46,
+      "rental_income": 35239,
+      "rental_income_source": "3-yr avg 2023-2025 from Smore Fun booking data (replaces P&L-derived $28,175 which included low-volume 2021-2022 startup years)",
       "cleaning": 125.81,
       "depreciation": 19876.26,
       "housewares_linens": 631.56,
@@ -111,10 +112,12 @@
       "taxes_licenses": 8181.77,
       "utilities": 5444.87,
       "other": 0,
+      "total_expenses_excl_interest": 51438,
       "total_expenses": 58856.11,
-      "gaap_net_income": -30681.64,
-      "true_cash_flow": -1742.00,
-      "notes": "Includes personal use 4 weeks/year (value ~$10K/yr). Mortgage paid off so interest_paid is historical only."
+      "gaap_net_income": -16199,
+      "true_cash_flow": 2033,
+      "trend_flag_2026": "Q1 2026 revenue $7,544 vs Q1 2025 $10,962 — down 31.2% YoY. Monitor Q2 2026 to determine if trend or noise.",
+      "notes": "Includes personal use 4 weeks/year (value ~$10K/yr). Mortgage paid off — interest excluded from going-forward cash calculations."
     },
     "pl_total_6yr": {
       "rental_income": 105657.97,
@@ -141,8 +144,10 @@
       "other": 0,
       "total_expenses": 39794.13,
       "gaap_net_income": -3794.13,
-      "true_cash_flow": 17068.00,
-      "improvement_vs_str": 18810.00
+      "true_cash_flow": 15096,
+      "improvement_vs_str_cash_only": 13063,
+      "improvement_vs_str_incl_vacation_value": 3063,
+      "notes": "true_cash_flow updated from $17,068 (v5) to $15,096 per minor methodology refinement. improvement_vs_str now uses revised STR baseline of $2,033 (Smore Fun data). When counting $10K/yr vacation value of STR, all-in gap narrows to ~$3,063/yr."
     }
   },
 

@@ -6,6 +6,8 @@ import {
   DollarSign,
   Home,
   CheckCircle2,
+  AlertTriangle,
+  BarChart3,
 } from 'lucide-react'
 
 const COMPS = [
@@ -13,6 +15,20 @@ const COMPS = [
   { address: '4170 Scenic Dr', date: 'Jan 2021', price: 535000, note: '' },
   { address: '4168 Scenic Dr', date: '2024', price: 450000, note: '' },
   { address: '4216 Scenic Dr', date: 'Feb 2022', price: 350000, note: '1,485 sqft, no dock' },
+]
+
+const SMORE_FUN_DATA = [
+  { year: '2023', revenue: 36665, nights: 184, occ: '50.4%', adr: 236, freeNights: 22 },
+  { year: '2024', revenue: 32187, nights: 194, occ: '53.2%', adr: 201, freeNights: 32 },
+  { year: '2025', revenue: 36866, nights: 207, occ: '56.7%', adr: 204, freeNights: 26 },
+  { year: '2026 YTD (thru 3/22)', revenue: 7544, nights: 44, occ: '54.3%', adr: 199, freeNights: 9 },
+]
+
+const Q1_TREND = [
+  { period: 'Q1 2023', revenue: 6990, yoy: null },
+  { period: 'Q1 2024', revenue: 7730, yoy: '+10.6%' },
+  { period: 'Q1 2025', revenue: 10962, yoy: '+41.8%' },
+  { period: 'Q1 2026', revenue: 7544, yoy: '−31.2%' },
 ]
 
 const COMPARISON_ROWS: {
@@ -25,7 +41,7 @@ const COMPARISON_ROWS: {
   isGaap?: boolean
   isCashFlow?: boolean
 }[] = [
-  { label: 'Rental income', str: 28175, ltr: 36000, delta: 7825, isIncome: true },
+  { label: 'Rental income', str: 35239, ltr: 36000, delta: 761, isIncome: true },
   { label: 'Insurance', str: 6219, ltr: 4353, delta: -1866 },
   { label: 'Management fees', str: 1958, ltr: 3600, delta: 1642 },
   { label: 'Repairs & maintenance', str: 8220, ltr: 4932, delta: -3288 },
@@ -35,9 +51,9 @@ const COMPARISON_ROWS: {
   { label: 'Lawncare', str: 520, ltr: 0, delta: -520 },
   { label: 'Housewares & linens', str: 632, ltr: 0, delta: -632 },
   { label: 'Job supplies', str: 261, ltr: 78, delta: -183 },
-  { label: 'Total Expenses', str: 58857, ltr: 39794, delta: -19063, isTotalExpenses: true },
-  { label: 'GAAP Net Income', str: -30682, ltr: -3794, delta: 26887, isGaap: true },
-  { label: 'True Cash Flow', str: -1742, ltr: 17068, delta: 18810, isCashFlow: true },
+  { label: 'Total Expenses', str: 51438, ltr: 39794, delta: -11644, isTotalExpenses: true },
+  { label: 'GAAP Net Income', str: -16199, ltr: -3794, delta: 12405, isGaap: true },
+  { label: 'True Cash Flow', str: 2033, ltr: 15096, delta: 13063, isCashFlow: true },
 ]
 
 const IMPLEMENTATION_STEPS = [
@@ -214,13 +230,94 @@ export default function ScenicDecisionPage() {
         </div>
       </div>
 
+      {/* Smore Fun Booking Data Section */}
+      <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="rounded-lg p-2 bg-blue-50 text-blue-600">
+            <BarChart3 className="h-4 w-4" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">STR Booking History (Smore Fun)</h2>
+            <p className="text-xs text-gray-400">4 years of monthly booking data · Updated March 2026</p>
+          </div>
+        </div>
+        <div className="overflow-x-auto mb-5">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {['Year', 'Rental Revenue', 'Nights Occ.', 'Occ %', 'Avg ADR', 'Personal Nights'].map(h => (
+                  <th key={h} className="pb-2 text-right first:text-left text-xs font-medium text-gray-400">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {SMORE_FUN_DATA.map((row) => (
+                <tr key={row.year} className={`border-b border-gray-50 ${row.year.includes('2026') ? 'bg-amber-50' : ''}`}>
+                  <td className="py-2.5 font-medium text-gray-800">{row.year}</td>
+                  <td className="py-2.5 text-right tabular-nums font-semibold text-gray-900">
+                    {row.revenue.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}
+                  </td>
+                  <td className="py-2.5 text-right text-gray-700">{row.nights}</td>
+                  <td className="py-2.5 text-right text-gray-700">{row.occ}</td>
+                  <td className="py-2.5 text-right text-gray-700">${row.adr}</td>
+                  <td className="py-2.5 text-right text-gray-500">{row.freeNights}</td>
+                </tr>
+              ))}
+              <tr className="border-t-2 border-gray-200 bg-gray-50">
+                <td className="py-2.5 font-bold text-gray-900">3-yr avg (2023–2025)</td>
+                <td className="py-2.5 text-right tabular-nums font-bold text-gray-900">$35,239</td>
+                <td className="py-2.5 text-right font-medium text-gray-700">195</td>
+                <td className="py-2.5 text-right font-medium text-gray-700">53.4%</td>
+                <td className="py-2.5 text-right font-medium text-gray-700">$214</td>
+                <td className="py-2.5 text-right font-medium text-gray-500">27</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Q1 Year-over-Year Revenue</h3>
+            <div className="space-y-1.5">
+              {Q1_TREND.map((row) => (
+                <div key={row.period} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">{row.period}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="tabular-nums font-medium text-gray-900">
+                      {row.revenue.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}
+                    </span>
+                    {row.yoy && (
+                      <span className={`text-xs font-semibold w-16 text-right ${row.yoy.startsWith('−') ? 'text-red-600' : 'text-emerald-600'}`}>
+                        {row.yoy}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900 mb-1">Q1 2026 Warning Signal</p>
+                <p className="text-xs text-amber-800">Revenue down 31.2% vs Q1 2025. Could be early AI-driven travel pullback or seasonal noise. <strong>April–June 2026 data is the tell.</strong> If Q2 also declines 20%+, accelerate LTR conversion timeline.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* STR vs LTR Comparison Table */}
       <div className="rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm mb-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="rounded-lg p-2 bg-emerald-50 text-emerald-600">
             <DollarSign className="h-4 w-4" />
           </div>
-          <h2 className="text-sm font-semibold text-gray-900">STR vs LTR — Annual P&amp;L Comparison</h2>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">STR vs LTR — Annual P&amp;L Comparison</h2>
+            <p className="text-xs text-blue-600 font-medium">Updated with Smore Fun actuals (Apr 2026)</p>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -267,23 +364,27 @@ export default function ScenicDecisionPage() {
           </table>
         </div>
         <p className="mt-3 text-xs text-gray-400">
-          Based on 3.75 years of STR operating history (annualized). LTR at $3,000/mo per Shoreward estimate. Mortgage paid off — interest excluded from both columns.
+          STR revenue updated to $35,239/yr (3-yr avg 2023–2025, Smore Fun booking data). Interest excluded — mortgage paid off. LTR at $3,000/mo per Shoreward estimate.
         </p>
       </div>
 
       {/* Net Impact Banner */}
-      <div className="rounded-xl bg-emerald-600 px-8 py-7 shadow-md mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <p className="text-emerald-100 text-sm font-medium uppercase tracking-wider mb-1">Net Annual Impact of Converting to LTR</p>
-          <p className="text-white text-4xl font-extrabold">+$18,810 / yr</p>
-          <p className="text-emerald-100 text-sm mt-1">
-            Cash flow swings from <span className="line-through">($1,742)</span> to <span className="font-semibold">$17,068</span>
-          </p>
-        </div>
-        <div className="bg-emerald-500 rounded-xl px-5 py-4 text-center shrink-0">
-          <p className="text-emerald-100 text-xs font-medium mb-0.5">Improvement</p>
-          <p className="text-white text-2xl font-extrabold">$18,810</p>
-          <p className="text-emerald-100 text-xs">immediate, annual, recurring</p>
+      <div className="rounded-xl bg-emerald-600 px-8 py-7 shadow-md mb-6">
+        <p className="text-emerald-100 text-sm font-medium uppercase tracking-wider mb-4">Net Annual Impact of Converting to LTR</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <p className="text-emerald-200 text-xs mb-1">Pure cash flow improvement</p>
+            <p className="text-white text-4xl font-extrabold">+$13,063 / yr</p>
+            <p className="text-emerald-200 text-sm mt-1">
+              STR <span className="font-semibold text-white">$2,033</span> → LTR <span className="font-semibold text-white">$15,096</span>
+            </p>
+          </div>
+          <div className="bg-emerald-500 rounded-xl px-5 py-4">
+            <p className="text-emerald-100 text-xs font-medium mb-2">When counting vacation value ($10K/yr STR benefit)</p>
+            <p className="text-white text-2xl font-extrabold">~$3,063 / yr</p>
+            <p className="text-emerald-100 text-xs mt-1">STR all-in: $12,033 · LTR all-in: $15,096</p>
+            <p className="text-emerald-200 text-xs mt-2">Much closer call than original model showed. Mary Jo&apos;s vote matters more here.</p>
+          </div>
         </div>
       </div>
 
@@ -381,8 +482,9 @@ export default function ScenicDecisionPage() {
             <ul className="space-y-2">
               {[
                 'Reversible — can revert to STR or sell later; no doors close permanently',
-                'Stops the bleeding immediately — $18,810/yr improvement with no tax event at conversion',
-                'Preserves the waterfront asset and its optionality; at 24 months, sell from a position of strength if desired',
+                'Smore Fun data narrows the gap vs. STR, but LTR still wins on simplification and AI-recession resilience',
+                'Q1 2026 decline (-31.2% YoY) is an early warning — LTR locks in $15,096/yr regardless of STR market softening',
+                'Preserves the waterfront asset; at the 24-month checkpoint, sell from strength if desired',
               ].map((reason) => (
                 <li key={reason} className="flex items-start gap-2 text-sm text-emerald-800">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />

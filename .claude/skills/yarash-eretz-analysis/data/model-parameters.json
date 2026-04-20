@@ -49,6 +49,26 @@
     "notes": "FL insurance inflation assumption is critical — premiums up 40-80% since 2022, with ongoing pressure"
   },
 
+  "scenic_str_actual_performance": {
+    "source": "Smore Fun Data Review March 2026",
+    "data_through": "2026-03-22",
+    "annual_revenue": {
+      "2023": 36665,
+      "2024": 32187,
+      "2025": 36866,
+      "2026_annualized_linear": 33995
+    },
+    "three_year_average_revenue": 35239,
+    "adr_by_year": { "2023": 236, "2024": 201, "2025": 204, "2026_ytd": 199 },
+    "occupancy_pct_by_year": { "2023": 0.504, "2024": 0.532, "2025": 0.567, "2026_ytd": 0.543 },
+    "q1_yoy_revenue": {
+      "q1_2023": 6990, "q1_2024": 7730, "q1_2025": 10962, "q1_2026": 7544,
+      "q1_2026_yoy_delta": -0.312
+    },
+    "monitoring_note": "Q1 2026 down 31.2% YoY. Apr-Jun 2026 data will confirm trend vs. noise. If Q2 also -20%+, accelerate LTR conversion.",
+    "personal_use_nights": { "2023": 22, "2024": 32, "2025": 26, "2026_ytd": 9 }
+  },
+
   "scenic_ltr_conversion_parameters": {
     "monthly_rent": 3000,
     "ltr_management_fee_pct": 0.10,
