@@ -11,7 +11,7 @@ interface AiResponse {
   model: string
 }
 
-async function callOpenAI(prompt: string, systemPrompt: string): Promise<AiResponse> {
+async function callOpenAI(prompt: string, systemPrompt: string, maxTokens: number): Promise<AiResponse> {
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) throw new Error('OPENAI_API_KEY not configured')
 
@@ -28,7 +28,7 @@ async function callOpenAI(prompt: string, systemPrompt: string): Promise<AiRespo
         { role: 'user', content: prompt },
       ],
       temperature: 0.3,
-      max_tokens: 2000,
+      max_tokens: maxTokens,
     }),
   })
 
@@ -44,7 +44,7 @@ async function callOpenAI(prompt: string, systemPrompt: string): Promise<AiRespo
   }
 }
 
-async function callAnthropic(prompt: string, systemPrompt: string): Promise<AiResponse> {
+async function callAnthropic(prompt: string, systemPrompt: string, maxTokens: number): Promise<AiResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
 
@@ -57,7 +57,7 @@ async function callAnthropic(prompt: string, systemPrompt: string): Promise<AiRe
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
+      max_tokens: maxTokens,
       system: systemPrompt,
       messages: [
         { role: 'user', content: prompt },
@@ -83,12 +83,13 @@ async function callAnthropic(prompt: string, systemPrompt: string): Promise<AiRe
  */
 export async function generateAiContent(
   prompt: string,
-  systemPrompt: string
+  systemPrompt: string,
+  maxTokens: number = 2000
 ): Promise<AiResponse> {
   // Try OpenAI first
   if (process.env.OPENAI_API_KEY) {
     try {
-      return await callOpenAI(prompt, systemPrompt)
+      return await callOpenAI(prompt, systemPrompt, maxTokens)
     } catch (err) {
       console.warn('OpenAI failed, trying Anthropic fallback:', err)
     }
@@ -96,7 +97,7 @@ export async function generateAiContent(
 
   // Try Anthropic
   if (process.env.ANTHROPIC_API_KEY) {
-    return await callAnthropic(prompt, systemPrompt)
+    return await callAnthropic(prompt, systemPrompt, maxTokens)
   }
 
   throw new Error('No AI provider configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY.')

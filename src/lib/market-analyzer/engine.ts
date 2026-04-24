@@ -148,8 +148,8 @@ Return a JSON object with this exact structure:
       "targetAction": "specific next step if any"
     }
   ],
-  "portfolioRecommendation": "2-3 paragraph overall portfolio strategy recommendation including concentration risk, geographic diversification, and optimal next acquisition profile",
-  "outlookSummary": "3-4 paragraph executive summary suitable for a family office quarterly review. Include market conditions, portfolio performance context, and forward-looking guidance.",
+  "portfolioRecommendation": "1-2 paragraph portfolio strategy recommendation covering concentration risk and next acquisition profile",
+  "outlookSummary": "2-3 paragraph executive summary: market conditions, portfolio performance, forward guidance",
   "allocationContext": {
     "currentAllocation": {
       "real_estate": percentage of portfolio in RE (use 100 for now since only RE),
@@ -174,7 +174,7 @@ Return a JSON object with this exact structure:
       "category": "market_data" | "property_insight" | "portfolio_strategy" | "economic_indicator" | "asset_allocation" | "risk_assessment",
       "assetClass": "real_estate" | "mixed",
       "title": "concise title for this insight",
-      "content": "detailed markdown content (2-4 paragraphs) that will be valuable for future analysis sessions",
+      "content": "1-2 concise paragraphs of insight for future reference",
       "tags": ["relevant", "searchable", "tags"],
       "confidence": "high" | "medium" | "low",
       "validMonths": number of months this insight remains relevant (3, 6, or 12),
@@ -183,16 +183,38 @@ Return a JSON object with this exact structure:
   ]
 }
 
-Generate 6-10 knowledge entries covering: market conditions, each property's outlook, portfolio strategy, risk factors, and allocation guidance. These entries build the knowledge base over time.`
+Generate 4-6 knowledge entries covering: market conditions, portfolio strategy, key risks, and allocation guidance. Keep each entry concise.`
 
-  const response = await generateAiContent(userPrompt, systemPrompt)
+  const response = await generateAiContent(userPrompt, systemPrompt, 8000)
 
   let cleaned = response.content.trim()
   if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
   }
 
-  const parsed = JSON.parse(cleaned)
+  // Attempt to repair truncated JSON by closing open structures
+  let parsed
+  try {
+    parsed = JSON.parse(cleaned)
+  } catch {
+    let repaired = cleaned
+    const openBraces = (repaired.match(/{/g) || []).length
+    const closeBraces = (repaired.match(/}/g) || []).length
+    const openBrackets = (repaired.match(/\[/g) || []).length
+    const closeBrackets = (repaired.match(/]/g) || []).length
+
+    // Truncate to last complete entry if in an array
+    const lastCompleteObj = repaired.lastIndexOf('}')
+    if (lastCompleteObj > 0) {
+      repaired = repaired.slice(0, lastCompleteObj + 1)
+    }
+
+    // Close unclosed brackets and braces
+    for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += ']'
+    for (let i = 0; i < openBraces - closeBraces; i++) repaired += '}'
+
+    parsed = JSON.parse(repaired)
+  }
 
   return {
     marketConditions: parsed.marketConditions,
