@@ -10,7 +10,6 @@ export default function RunAnalysisButton() {
   const [error, setError] = useState<string | null>(null)
   const [showOptions, setShowOptions] = useState(false)
   const [horizon, setHorizon] = useState<string>('12-month')
-  const [analysisType, setAnalysisType] = useState<string>('portfolio_review')
   const [additionalContext, setAdditionalContext] = useState('')
 
   async function handleRun() {
@@ -22,7 +21,7 @@ export default function RunAnalysisButton() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          analysisType,
+          analysisType: 'portfolio_review',
           horizon,
           additionalContext: additionalContext.trim() || undefined,
         }),
@@ -70,20 +69,6 @@ export default function RunAnalysisButton() {
         <div className="mt-4 rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm space-y-4 max-w-md">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Analysis Type
-            </label>
-            <select
-              className={selectClass}
-              value={analysisType}
-              onChange={(e) => setAnalysisType(e.target.value)}
-            >
-              <option value="portfolio_review">Portfolio Review</option>
-              <option value="market_update">Market Update</option>
-              <option value="rebalancing">Rebalancing Analysis</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Outlook Horizon
             </label>
             <select
@@ -105,10 +90,10 @@ export default function RunAnalysisButton() {
               rows={3}
               value={additionalContext}
               onChange={(e) => setAdditionalContext(e.target.value)}
-              placeholder="e.g. Considering selling Sunderland, looking at Clay County duplex..."
+              placeholder="e.g. Considering selling Sunderland, looking at Clay County duplex, one property is waterfront..."
             />
             <p className="text-[11px] text-gray-400 mt-1">
-              Add any specific questions or context for the analysis
+              Add specific questions, recent developments, or portfolio considerations
             </p>
           </div>
         </div>

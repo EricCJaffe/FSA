@@ -48,21 +48,41 @@ export async function POST(request: NextRequest) {
     // Fetch portfolio properties
     const { data: properties } = await supabase
       .from('properties')
-      .select('id, name, address, property_type, county, purchase_price, market_value, monthly_rent')
+      .select('id, name, address, city, state, zip, property_type, purchase_price, current_market_value, mortgage_balance, mortgage_rate, mortgage_payment, notes, active')
       .eq('org_id', role.org_id)
+      .eq('active', true)
 
-    const portfolioProperties = (properties ?? []).map((p) => ({
-      id: p.id,
-      name: p.name,
-      address: p.address || '',
-      type: p.property_type || 'SFH',
-      county: p.county || 'Unknown',
-      basis: p.purchase_price || 0,
-      value: p.market_value || p.purchase_price || 0,
-      monthlyRent: p.monthly_rent || 0,
-      annualCashFlow: (p.monthly_rent || 0) * 12 * 0.55,
-      cashOnCash: p.purchase_price ? ((p.monthly_rent || 0) * 12 * 0.55) / p.purchase_price : 0,
-    }))
+    const portfolioProperties = (properties ?? []).map((p) => {
+      // Derive county from address or city
+      const addr = (p.address || '') + ' ' + (p.city || '')
+      const county = addr.toLowerCase().includes('orange park') || addr.toLowerCase().includes('32065')
+        ? 'Clay'
+        : addr.toLowerCase().includes('jacksonville') || addr.toLowerCase().includes('322')
+          ? 'Duval'
+          : 'Unknown'
+
+      const basis = Number(p.purchase_price) || 0
+      const value = Number(p.current_market_value) || basis
+      // Estimate rent from property value if not available
+      const estimatedRent = Math.round(value * 0.007)
+
+      return {
+        id: p.id,
+        name: p.name,
+        address: [p.address, p.city, p.state, p.zip].filter(Boolean).join(', '),
+        type: p.property_type || 'LTR',
+        county,
+        basis,
+        value,
+        monthlyRent: estimatedRent,
+        annualCashFlow: estimatedRent * 12 * 0.55,
+        cashOnCash: basis > 0 ? (estimatedRent * 12 * 0.55) / basis : 0,
+        mortgageBalance: Number(p.mortgage_balance) || 0,
+        mortgageRate: Number(p.mortgage_rate) || 0,
+        mortgagePayment: Number(p.mortgage_payment) || 0,
+        notes: p.notes || '',
+      }
+    })
 
     // Fetch recent knowledge entries for context
     const { data: knowledgeEntries } = await supabase
