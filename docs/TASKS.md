@@ -1,13 +1,13 @@
 # Tasks
 
-_Last updated: 2026-03-13_
+_Last updated: 2026-04-24_
 
 ---
 
 ## In Progress
 
-- [ ] Get **P&L by Class** export from QBO (needed for per-property analytics)
-- [ ] Build per-property + portfolio analytics dashboards
+- [x] Get **P&L by Class** export from QBO — completed via live API sync
+- [x] Build per-property + portfolio analytics dashboards — completed
 
 ---
 
@@ -126,7 +126,7 @@ _Last updated: 2026-03-13_
 
 - [ ] PM ↔ financial cross-linking (property capital projects → financial_line_items)
 - [ ] Client portal for businessos-pm (routing + auth only — schema already supports it)
-- [ ] Deal Analyzer (new acquisition modeling)
+- [x] Deal Analyzer (new acquisition modeling) — moved to Phase 1, completed
 - [ ] STR → LTR conversion scenario modeler
 - [ ] Zillow API integration
 - [ ] Jacksonville market intelligence (CoreLogic/MLS)
@@ -170,3 +170,9 @@ _Last updated: 2026-03-13_
 - [x] 2026-03-13 — MoM/YoY delta indicators on portfolio metric cards (▲/▼ % vs prior period)
 - [x] 2026-03-13 — Trend charts on portfolio page (Recharts — area/line toggle, metric filter)
 - [x] 2026-03-13 — Report commentary/annotations (add notes to reports before sharing)
+- [x] 2026-04-23 — Balance sheet detail breakdown on portfolio page (Assets, Liabilities, Equity line items)
+- [x] 2026-04-23 — Fixed balance sheet account type classification (Bank Accounts, Treasury Direct now correctly classified as assets)
+- [x] 2026-04-23 — Trend chart expanded to show all available months (not just last 12)
+- [x] 2026-04-23 — Monthly reports with MoM/YoY period comparisons and trailing trend charts
+- [x] 2026-04-23 — Fixed report generation to filter by specific month (was querying all data)
+- [x] 2026-04-24 — Deal Analyzer feature: acquisition evaluation with NOI/CoC/verdict, portfolio comparison, sensitivity scenarios, DD checklist, outcome tracking
