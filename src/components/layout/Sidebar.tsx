@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LayoutDashboard, Building2, PieChart, FileBarChart, Calculator, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Building2, PieChart, FileBarChart, Calculator, BarChart3, Settings, LogOut } from 'lucide-react'
 
 const nav = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -11,6 +11,7 @@ const nav = [
   { label: 'Portfolio', href: '/dashboard/portfolio', icon: PieChart },
   { label: 'Reports', href: '/dashboard/reports', icon: FileBarChart },
   { label: 'Deal Analyzer', href: '/dashboard/deal-analyzer', icon: Calculator },
+  { label: 'Market Analyzer', href: '/dashboard/market-analyzer', icon: BarChart3 },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 

@@ -62,6 +62,20 @@ _Last updated: 2026-04-24_
 - [x] Month-over-month and YoY trend charts (Recharts)
 - [ ] LTR metrics: occupancy rate, vacancy days, lease expiration tracker
 
+### Market Analyzer (FSA)
+- [x] Market analysis engine with AI-powered portfolio review
+- [x] Buy/sell/hold recommendations per property
+- [x] Knowledge base — accumulated structured insights ("second brain")
+- [x] Portfolio allocation context (current vs recommended, multi-asset class ready)
+- [x] Market conditions analysis (sentiment, rates, local trends, risks)
+- [x] Sensitivity to analysis type (portfolio review, market update, rebalancing)
+- [x] Knowledge base viewer with category grouping and tag cloud
+- [x] Download PDF for market analysis reports
+- [ ] Scheduled/recurring market analyses (auto-run monthly)
+- [ ] Knowledge base search and filtering UI
+- [ ] Manual knowledge entry creation from UI
+- [ ] Multi-asset class portfolio integration (equities, bonds, commodities, digital)
+
 ### AI Insights Engine (FSA)
 - [x] Multi-model routing logic (GPT-4o primary, Claude fallback)
 - [x] Property health summary generation
@@ -127,6 +141,8 @@ _Last updated: 2026-04-24_
 - [ ] PM ↔ financial cross-linking (property capital projects → financial_line_items)
 - [ ] Client portal for businessos-pm (routing + auth only — schema already supports it)
 - [x] Deal Analyzer (new acquisition modeling) — moved to Phase 1, completed
+- [x] Market Analyzer with knowledge base — moved to Phase 1, completed
+- [ ] Multi-asset portfolio rebalancing (extend allocation context to real data)
 - [ ] STR → LTR conversion scenario modeler
 - [ ] Zillow API integration
 - [ ] Jacksonville market intelligence (CoreLogic/MLS)
@@ -176,3 +192,6 @@ _Last updated: 2026-04-24_
 - [x] 2026-04-23 — Monthly reports with MoM/YoY period comparisons and trailing trend charts
 - [x] 2026-04-23 — Fixed report generation to filter by specific month (was querying all data)
 - [x] 2026-04-24 — Deal Analyzer feature: acquisition evaluation with NOI/CoC/verdict, portfolio comparison, sensitivity scenarios, DD checklist, outcome tracking
+- [x] 2026-04-24 — Deal Analyzer two-step flow: AI property lookup from address → review/adjust → analyze
+- [x] 2026-04-24 — Download PDF on deal analysis detail page (print-optimized with FSA branding)
+- [x] 2026-04-24 — Market Analyzer: AI portfolio review with buy/sell/hold per property, market conditions, allocation context, knowledge base
