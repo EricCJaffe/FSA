@@ -153,7 +153,7 @@ export default function DealResults({ analysis }: { analysis: DealAnalysis }) {
           <DealVerdictBadge verdict={analysis.verdict} size="lg" />
           <button
             onClick={handleCopy}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors print:hidden"
           >
             {copied ? (
               <>

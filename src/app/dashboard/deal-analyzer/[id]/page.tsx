@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, MapPin, Home, Calendar, Ruler, Trash2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Home, Calendar, Ruler } from 'lucide-react'
 import DealResults from '@/components/deal-analyzer/DealResults'
 import DealOutcomeEditor from '@/components/deal-analyzer/DealOutcomeEditor'
 import DeleteDealButton from '@/components/deal-analyzer/DeleteDealButton'
+import DownloadPdfButton from '@/components/deal-analyzer/DownloadPdfButton'
 import { formatDealCurrency } from '@/lib/deal-analyzer/calculator'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -51,10 +52,29 @@ export default async function DealDetailPage({
   ].filter(Boolean) as { icon: React.ElementType; text: string }[]
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8 max-w-4xl print:p-0 print:max-w-none">
+      {/* Print-only branded header */}
+      <div className="hidden print:block mb-6 pb-4 border-b-2 border-gray-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-gray-900 tracking-tight">
+              Foundation Stone Advisors
+            </h1>
+            <p className="text-xs text-gray-500">Investment Property Analysis</p>
+          </div>
+          <p className="text-xs text-gray-400">
+            {new Date(analysis.created_at).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </p>
+        </div>
+      </div>
+
       <Link
         href="/dashboard/deal-analyzer"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6 print:hidden"
       >
         <ArrowLeft className="h-4 w-4" />
         Deal Analyzer
@@ -63,7 +83,7 @@ export default async function DealDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="text-xl font-bold text-gray-900 print:text-2xl">
             {analysis.property_name}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -102,12 +122,15 @@ export default async function DealDetailPage({
             </span>
           </div>
         </div>
-        <DeleteDealButton analysisId={analysis.id} />
+        <div className="flex items-center gap-2 print:hidden">
+          <DownloadPdfButton />
+          <DeleteDealButton analysisId={analysis.id} />
+        </div>
       </div>
 
       <DealResults analysis={analysis} />
 
-      <div className="mt-6">
+      <div className="mt-6 print:hidden">
         <DealOutcomeEditor
           analysisId={analysis.id}
           initialNotes={analysis.user_notes}
