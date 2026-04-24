@@ -18,17 +18,17 @@
 ---
 
 ## QuickBooks Online (QBO)
-- **Status:** Not yet configured — Phase 1
-- **Purpose:** Primary financial data source — P&L, transactions, Chart of Accounts by class (each property = one QBO class)
+- **Status:** Connected, live sync working
+- **Purpose:** Primary financial data source — P&L by Class (per-property), Balance Sheet
 - **Auth:** OAuth 2.0 (Intuit Developer Portal)
-- **Scopes needed:** `com.intuit.quickbooks.accounting`
+- **Scopes:** `com.intuit.quickbooks.accounting`
 - **Tokens stored:** `qbo_connections` table (access + refresh tokens, expiry)
-- **Sync:** Scheduled (on monthly close) + manual refresh
-- **Setup steps:**
-  1. Create app at https://developer.intuit.com
-  2. Set redirect URI: `https://fsa-lake.vercel.app/api/qbo/callback`
-  3. Add `QBO_CLIENT_ID`, `QBO_CLIENT_SECRET`, `QBO_REDIRECT_URI`, `QBO_ENVIRONMENT` to Vercel env vars
-  4. Build OAuth flow in `/api/qbo/connect` and `/api/qbo/callback`
+- **Sync features:**
+  - Manual sync from `/dashboard/settings`
+  - Batch sync last 12 months
+  - P&L by Class (`summarize_column_by: 'Classes'`) — per-property income/expense
+  - Balance Sheet sync with dedup
+- **API routes:** `/api/qbo/connect`, `/api/qbo/callback`, `/api/qbo/sync`, `/api/qbo/status`, `/api/qbo/disconnect`
 
 ---
 
@@ -56,14 +56,20 @@
 ---
 
 ## AI / LLM (Multi-Model)
-- **Status:** Not yet configured — Phase 1
-- **Purpose:** Property health summaries, anomaly detection, monthly narratives, portfolio insights
-- **Architecture:** Multi-model routing
-  - Claude (Anthropic) — primary, complex analysis
-  - GPT-4o (OpenAI) — fallback
-  - Lighter models — routine/frequent queries
-- **Persistence:** All insights stored in `ai_insights` table with model used, prompt hash, input context
-- **Setup:** Add `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` to Vercel env vars
+- **Status:** Connected (OpenAI GPT-4o primary, Anthropic Claude fallback)
+- **Purpose:** Property health summaries, anomaly detection, monthly narratives, deal property lookup, market analysis, knowledge base generation
+- **Architecture:** Multi-model routing (`src/lib/ai/client.ts`)
+  - GPT-4o (OpenAI) — primary for all AI features
+  - Claude (Anthropic) — automatic fallback if OpenAI fails
+  - Token limit configurable per call (default 2000, market analysis uses 12000)
+- **AI-Powered Features:**
+  - Property health summaries and anomaly detection (`ai_insights` table)
+  - Monthly report narrative generation
+  - Deal Analyzer property lookup (estimates taxes, insurance, rent from address)
+  - Market Analyzer portfolio review (buy/sell/hold recommendations, market conditions)
+  - Knowledge base entry generation (accumulated insights over time)
+- **Persistence:** `ai_insights`, `deal_analyses`, `market_analyses`, `knowledge_entries` tables
+- **Setup:** Add `OPENAI_API_KEY` (required) and optionally `ANTHROPIC_API_KEY` to env vars
 
 ---
 

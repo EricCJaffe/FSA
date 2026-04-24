@@ -22,7 +22,7 @@
 
 ---
 
-### QuickBooks Online (Phase 1 — not yet configured)
+### QuickBooks Online (configured)
 | Variable | Scope | Description |
 |---|---|---|
 | `QBO_CLIENT_ID` | Server only | QBO app Client ID from Intuit Developer Portal |
@@ -45,11 +45,13 @@
 
 ---
 
-### AI / LLM (Phase 1 — not yet configured)
+### AI / LLM (configured)
 | Variable | Scope | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Server only | Claude API key (primary analysis model) |
-| `OPENAI_API_KEY` | Server only | GPT-4o API key (fallback model) |
+| `OPENAI_API_KEY` | Server only | GPT-4o API key (primary model for all AI features) |
+| `ANTHROPIC_API_KEY` | Server only | Claude API key (automatic fallback if OpenAI fails) |
+
+> Used by: Deal Analyzer property lookup, Market Analyzer portfolio review, AI insights, monthly report narratives, knowledge base generation
 
 ---
 

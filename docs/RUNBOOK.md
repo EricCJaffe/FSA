@@ -8,7 +8,11 @@ npm run build      # production build (run before committing)
 npm run lint       # lint check
 ```
 
-Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+Requires `.env.local` with:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (for admin DB operations in Deal/Market Analyzer)
+- `OPENAI_API_KEY` (for AI features: property lookup, market analysis, insights)
 
 ---
 
@@ -30,16 +34,6 @@ See `docs/DEPLOYMENT.md` for full details.
 4. Commit migration file + doc update together
 
 **Never modify existing migration files.** Write a new migration for any changes.
-
----
-
-## QBO Sync (once configured)
-
-- **Manual sync:** triggered from `/dashboard` UI — calls `/api/qbo/sync`
-- **Scheduled sync:** Supabase edge function (cron) — runs on configurable close date
-- **Sync status:** visible in `qbo_sync_records` table and UI sync history
-- **Token refresh:** automatic via QBO refresh token (30-day expiry window)
-- **On sync failure:** check `error_message` in `qbo_sync_records`; re-auth at `/api/qbo/connect` if tokens expired
 
 ---
 
@@ -71,6 +65,39 @@ See `docs/DEPLOYMENT.md` for full details.
 3. Trigger redeploy
 4. Revoke old secret in the issuing service
 5. Update `docs/ENVIRONMENT.md` if the variable name changed
+
+---
+
+## Running a Deal Analysis
+
+1. Navigate to `/dashboard/deal-analyzer` → New Analysis
+2. **Step 1 — Lookup:** Enter property address + optional asking price → click "Lookup Property"
+3. AI researches the property and auto-populates: beds, baths, sqft, county, year built, estimated taxes, insurance, rent, HOA, repairs
+4. **Step 2 — Review:** Adjust any estimates, set the all-in cost → click "Analyze Deal"
+5. Results include: verdict (Strong Recommend → Hard Pass), NOI, Cash-on-Cash, portfolio comparison, sensitivity scenarios, due diligence checklist
+6. Download PDF to share with realtor or partners
+
+---
+
+## Running a Market Analysis
+
+1. Navigate to `/dashboard/market-analyzer` → New Analysis
+2. Select outlook horizon (6/12/24 months) and add optional context
+3. AI analyzes the full portfolio against current market conditions
+4. Results include: buy/sell/hold per property, market conditions, asset allocation, portfolio strategy, risk assessment
+5. Knowledge base entries are automatically generated and accumulated
+6. View accumulated knowledge at `/dashboard/market-analyzer/knowledge`
+7. Download PDF for quarterly review sharing
+
+---
+
+## QBO Sync
+
+- **Manual sync:** `/dashboard/settings` → Sync Now (syncs P&L by Class + Balance Sheet for current period)
+- **Batch sync:** `/dashboard/settings` → Sync Last 12 Months (catches up historical data)
+- **Sync status:** visible on settings page with sync history
+- **Token refresh:** automatic via QBO refresh token
+- **On sync failure:** check error message on settings page; re-auth at `/dashboard/settings` if tokens expired
 
 ---
 

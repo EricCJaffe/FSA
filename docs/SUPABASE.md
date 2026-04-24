@@ -33,9 +33,12 @@
 | `properties` | Property registry (LTR + STR) |
 | `qbo_connections` | QuickBooks OAuth tokens per org |
 | `qbo_sync_records` | QBO sync history + status |
-| `financial_line_items` | P&L data synced from QBO |
-| `monthly_reports` | Generated monthly reports |
+| `financial_line_items` | P&L + Balance Sheet data synced from QBO |
+| `monthly_reports` | Generated monthly reports with MoM/YoY comparisons |
 | `ai_insights` | Persisted AI-generated insights |
+| `deal_analyses` | Deal Analyzer evaluations (NOI, CoC, verdict, sensitivity, outcome tracking) |
+| `market_analyses` | Market Analyzer portfolio reviews (market conditions, recommendations, allocation) |
+| `knowledge_entries` | Knowledge base — accumulated AI insights ("second brain"), tagged by category + asset class |
 | `audit_log` | All data access + write events |
 
 ### Project Management Tables (businessos-pm)
@@ -68,6 +71,8 @@ All migrations in `supabase/migrations/` named `YYYYMMDDHHMMSS_<slug>.sql`.
 |---|---|
 | `20260312000000_initial_schema.sql` | Core schema: orgs, properties, RBAC, financial tables, RLS |
 | `20260312000001_tenants_org_types_and_pm_schema.sql` | Tenants table, org_type/ownership_pct on orgs, full PM schema + seeded templates |
+| `20260424000000_deal_analyses.sql` | Deal Analyzer table: property info, economics, computed results, verdict, outcome tracking |
+| `20260424100000_market_analyses_knowledge_base.sql` | Market Analyzer + Knowledge Base tables with RLS, GIN index on tags |
 
 ## Seed Data
 | Table | Record |

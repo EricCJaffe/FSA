@@ -22,6 +22,13 @@ RBAC is enforced at **two layers**:
 1. **Supabase RLS** — all tables have row-level security enabled with role-checking policies
 2. **Server Actions / Route Handlers** — re-verify role before any mutation
 
+## Admin Client Pattern
+Some API routes (Deal Analyzer, Market Analyzer) use the Supabase service role key to bypass RLS for inserts. This is intentional:
+- User is still authenticated via session client first
+- Role is verified (must be `family_office_admin` or `org_admin`)
+- Admin client is only used for the DB write, scoped to the user's org
+- Pattern: authenticate user → check role → use admin client for insert
+
 ## Secrets Management
 - All secrets in Vercel environment variables (never in code or `.env.example`)
 - `NEXT_PUBLIC_*` vars: only non-secret public config (Supabase URL + anon key)
