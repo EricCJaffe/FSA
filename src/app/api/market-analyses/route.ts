@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { runMarketAnalysis, type MarketAnalysisRequest } from '@/lib/market-analyzer/engine'
+import { PORTFOLIO_BASELINE } from '@/lib/deal-analyzer/portfolio-baseline'
 
 export const maxDuration = 120
 
@@ -52,31 +53,40 @@ export async function POST(request: NextRequest) {
       .eq('org_id', role.org_id)
       .eq('active', true)
 
+    // Build baseline lookup by name for enrichment
+    const baselineByName = new Map(
+      PORTFOLIO_BASELINE.properties.map((bp) => [bp.name.toLowerCase(), bp])
+    )
+
     const portfolioProperties = (properties ?? []).map((p) => {
-      // Derive county from address or city
+      // Match to baseline by name for financial data
+      const baseline = baselineByName.get(p.name.toLowerCase())
+
+      // Derive county from address/city or baseline
       const addr = (p.address || '') + ' ' + (p.city || '')
       const county = addr.toLowerCase().includes('orange park') || addr.toLowerCase().includes('32065')
         ? 'Clay'
         : addr.toLowerCase().includes('jacksonville') || addr.toLowerCase().includes('322')
           ? 'Duval'
-          : 'Unknown'
+          : baseline?.county || 'Unknown'
 
-      const basis = Number(p.purchase_price) || 0
-      const value = Number(p.current_market_value) || basis
-      // Estimate rent from property value if not available
-      const estimatedRent = Math.round(value * 0.007)
+      const basis = Number(p.purchase_price) || baseline?.basis || 0
+      const value = Number(p.current_market_value) || baseline?.value || basis
+      const monthlyRent = baseline?.monthlyRent || Math.round(value * 0.007)
+      const annualCashFlow = baseline?.annualCashFlow || monthlyRent * 12 * 0.55
+      const cashOnCash = baseline?.cashOnCash || (basis > 0 ? annualCashFlow / basis : 0)
 
       return {
         id: p.id,
         name: p.name,
-        address: [p.address, p.city, p.state, p.zip].filter(Boolean).join(', '),
-        type: p.property_type || 'LTR',
+        address: baseline?.address || [p.address, p.city, p.state, p.zip].filter(Boolean).join(', '),
+        type: p.property_type || baseline?.type || 'LTR',
         county,
         basis,
         value,
-        monthlyRent: estimatedRent,
-        annualCashFlow: estimatedRent * 12 * 0.55,
-        cashOnCash: basis > 0 ? (estimatedRent * 12 * 0.55) / basis : 0,
+        monthlyRent,
+        annualCashFlow,
+        cashOnCash,
         mortgageBalance: Number(p.mortgage_balance) || 0,
         mortgageRate: Number(p.mortgage_rate) || 0,
         mortgagePayment: Number(p.mortgage_payment) || 0,
